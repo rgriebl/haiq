@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+  <dict>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+
+    <key>NSHighResolutionCapable</key>
+    <string>True</string>
+
+    <key>CFBundleIconFile</key>
+    <string>haiq.icns</string>
+
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <key>CFBundleGetInfoString</key>
+    <string>Bundle for HAiQ</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>org.griebl.@EXECUTABLE@</string>
+
+    <key>CFBundleSignature</key>
+    <string>ttxt</string>
+
+    <key>CFBundleExecutable</key>
+    <string>@EXECUTABLE@</string>
+
+    <key>CFBundleName</key>
+    <string>HAiQ</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>@FULL_VERSION@</string>
+
+    <key>CFBundleVersion</key>
+    <string>@FULL_VERSION@</string>
+  </dict>
+</plist>

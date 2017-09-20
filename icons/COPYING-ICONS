@@ -1,0 +1,24 @@
+dir: mdi and mdi-rounded
+name: Material Design Icons 
+license: Pictogrammers Free License
+license_text: https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+
+dir: darksky
+name: Paul Reed's weather icons
+license: MIT
+license_text: https://github.com/Paul-Reed/weather-icons-lite/blob/master/LICENSE
+
+dir: oa
+name: Open Automation
+license: Creative Commons
+license_text: https://github.com/OpenAutomationProject/knx-uf-iconset/blob/master/license.txt
+
+dir: fhemsvg
+name: FHEM SVG
+license: GPL2
+license_text: https://svn.fhem.de/trac/browser/trunk/fhem/COPYING
+
+dir: fa
+name: Font Awesome
+license: Creative Commons
+license_text: https://fontawesome.com/license/free

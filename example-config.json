@@ -1,0 +1,127 @@
+[
+    {
+        "*": {
+            "calendar": {
+                "password": "xxxxxx",
+                "url": "https://caldav.xxxxx.org/user/calendar.ics/",
+                "username": "user"
+            },
+            "homeAssistant": {
+                "accessToken": "xxxxx",
+                "url": "http://xxxxx:8123/api/websocket"
+            }
+        }
+    },
+    {
+        "office": {
+            "view": "OfficeView.qml",
+            "quickControls": {
+                "Controls": {
+                    "Style": "Universal"
+                }
+            },
+            "calendar": null
+        }
+    },
+    {
+        "kitchen|bedside*|livingroom*": {
+            "quickControls": {
+                "Controls": {
+                    "Style": "Universal"
+                },
+                "Universal": {
+                    "Accent": "#0a84ff",
+                    "Background": "#000000",
+                    "Foreground": "#ffffff",
+                    "Theme": "Dark"
+                }
+            }
+        }
+    },
+    {
+        "kitchen": {
+            "view": "KitchenView.qml"
+        }
+    },
+    {
+        "livingroom": {
+            "view": "LivingroomView.qml",
+            "calendar": null
+        }
+    },
+    {
+        "bedside": {
+            "view": "BedsideView.qml",
+            "squeezeboxServer": {
+                "url": "http://lms.local:9090"
+            }
+        }
+    },
+    {
+        "bedside-jane": {
+            "qml": {
+                "coverEntity": "cover.jane_cover",
+                "lights": [
+                    {
+                        "entity": "switch.jane_lights"
+                    },
+                    {
+                        "entity": "none"
+                    }
+                ]
+            },
+            "squeezeboxServer": {
+                "players": [
+                    "Jane",
+                    ""
+                ],
+                "thisPlayer": "Jane"
+            }
+        }
+    },
+    {
+        "bedside-joe": {
+            "qml": {
+                "coverEntity": "cover.joe_cover",
+                "lights": [
+                    {
+                        "entity": "none"
+                    },
+                    {
+                        "entity": "none"
+                    }
+                ]
+            },
+            "squeezeboxServer": {
+                "players": [
+                    "Joe",
+                    "Jane"
+                ],
+                "thisPlayer": "Joe"
+            }
+        }
+    },
+    {
+        "bedside-bedroom": {
+            "qml": {
+                "coverEntity": "cover.bedroom_cover",
+                "lights": [
+                    {
+                        "entity": "switch.bedroom_light"
+                    },
+                    {
+                        "entity": "switch.bedroom_wardrobe_light",
+                        "icon": "fa/tshirt-solid"
+                    }
+                ]
+            },
+            "squeezeboxServer": {
+                "players": [
+                    "Bedroom",
+                    "Jane",
+                    "Joe"
+                ]
+            }
+        }
+    }
+]

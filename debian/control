@@ -1,0 +1,18 @@
+Source: haiq
+Section: embedded
+Priority: extra
+Maintainer: Robert Griebl <robert@griebl.org>
+Build-Depends: debhelper (>= 7.0.50~), qtbase5-dev (>= 5.15), qt5-qmake (>= 5.15),
+ qtbase5-dev-tools (>= 5.15), qtchooser (>= 5.15), qtdeclarative5-private-dev (>= 5.15),
+ libqt5websockets5-dev (>= 5.15), libqt5svg5-dev (>= 5.15), qtdeclarative5-dev (>= 5.15),
+ qtmultimedia5-dev (>= 5.15), qtquickcontrols2-5-dev (>= 5.15)
+Standards-Version: 4.5.0
+
+Package: haiq
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, qml-module-qtquick2, qml-module-qtquick-xmllistmodel,
+ qml-module-qtquick-virtualkeyboard, qml-module-qtquick-shapes,
+ qml-module-qtquick-controls2, qml-module-qtgraphicaleffects, qml-module-qt-labs-settings,
+ qml-module-qtmultimedia, qml-module-qtquick-dialogs, qml-module-qtquick-layouts
+Description: HAiQ - Home-Assistant Interface using Qt/QML
+ HAiQ is a modular Qt/QML based framework to create specialised UIs for HomeAssistant

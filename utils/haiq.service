@@ -1,0 +1,25 @@
+[Unit]
+Description=HAiQ
+After=network.target
+
+[Service]
+Type=simple
+Environment=LANG=de
+Environment=QT_QPA_EGLFS_HIDECURSOR=1
+Environment=QT_QPA_PLATFORM=eglfs 
+
+ExecStart=/usr/bin/haiq --variant ${HAIQ_VARIANT} $HAIQ_EXTRA_ARGUMENTS
+KillMode=process
+Restart=always
+RestartSec=10sec
+User=pi
+Group=pi
+TTYPath=/dev/tty7
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+StandardInput=tty-force
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

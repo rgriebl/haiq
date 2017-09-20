@@ -1,0 +1,303 @@
+name: QMake Build Matrix
+
+on:
+  push:
+    workflow_dispatch:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.runs-on }}
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+      HAIQ_QT_MODULES: qtbase5-dev qt5-qmake qtbase5-dev-tools qtchooser qt5-style-plugins qttools5-dev qtbase5-private-dev qtdeclarative5-dev qtdeclarative5-private-dev qtmultimedia5-dev libqt5websockets5-dev libqt5svg5-dev qtquickcontrols2-5-dev
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - name: "Windows 64bit"
+          artifact: "Windows-x64"
+          runs-on: windows-latest
+          os: windows
+          qt_version: '5.15.2'
+          qt_arch: 'win64_msvc2019_64'
+          environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+          vcpkg_triplet: 'x64-windows'
+
+        - name: "RaspiOS Bullseye 64bit"
+          artifact: "RaspiOS-Bullseye-64"
+          runs-on: [self-hosted, linux, ARM64, RPI]
+          os: linux
+
+        - name: "macOS 64bit"
+          artifact: "macOS"
+          runs-on: macos-11
+          os: macos
+          qt_version: '5.15.2'
+          qt_arch: ''
+          vcpkg_triplet: 'x64-osx'
+
+        - name: "Android ARM"
+          artifact: "Android-ARM"
+          runs-on: ubuntu-20.04
+          os: android
+          qt_version: '5.15.2'
+          qt_target: 'android'
+          qmake_extra_config: 'ANDROID_ABIS=armeabi-v7a'
+
+#        - name: "iOS"
+#          artifact: "iOS"
+#          runs-on: macos-latest
+#          os: ios
+#          qt_version: '6.2.1'
+#          qt_arch: ''
+#          qt_target: 'ios'
+#          qmake_extra_config: ''
+
+  # BUILD
+  #################################################
+
+    steps:
+
+    # Caching
+    #################################################
+
+    - name: Cache vcpkg on Windows
+      uses: actions/cache@v2
+      if: (matrix.config.os == 'windows') && matrix.config.vcpkg_triplet
+      with:
+        path: |
+          C:\vcpkg\installed
+          C:\vcpkg\downloads
+        key: ${{ matrix.config.vcpkg_triplet }}-vcpkg-cache
+
+    - name: Cache vcpkg on macOS
+      uses: actions/cache@v2
+      if: (matrix.config.os == 'macos') && matrix.config.vcpkg_triplet
+      with:
+        path: |
+          /usr/local/share/vcpkg/installed
+          /usr/local/share/vcpkg/downloads
+        key: ${{ matrix.config.vcpkg_triplet }}-vcpkg-cache
+
+    - name: Cache Qt from qt.io
+      id: cache-qt
+      if: (matrix.config.os != 'linux') || matrix.config.appimage
+      uses: actions/cache@v1
+      with:
+        py7zrversion: '>=0.17.0' # https://github.com/miurahr/aqtinstall/issues/438
+        path: ../Qt
+        key: ${{ matrix.config.os }}-${{ matrix.config.qt_target }}-${{ matrix.config.qt_arch }}-QtCache
+
+    # Get Qt
+    #################################################
+
+    - name: Install Qt from qt.io
+      if: (matrix.config.os != 'linux') || matrix.config.appimage
+      uses: jurplel/install-qt-action@v2
+      with:
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+        version: ${{ matrix.config.qt_version }}
+        modules: 'qtsvg qttools'
+        arch: ${{ matrix.config.qt_arch }}
+        target: ${{ matrix.config.qt_target || 'desktop' }}
+        tools: ${{ matrix.config.qt_tools }}
+
+    - name: Install Qt from qt.io (OS version for cross-compiling)
+      if: (matrix.config.os == 'android') || (matrix.config.os == 'ios')
+      uses: jurplel/install-qt-action@v2
+      with:
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+        version: ${{ matrix.config.qt_version }}
+        modules: 'qttools'
+        target: 'desktop'
+        tools: ${{ matrix.config.qt_tools }}
+
+    - name: Install Qt on Linux (native/appimage)
+      if: (matrix.config.os == 'linux') && !matrix.config.debian_container
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt update
+        sudo DEBIAN_FRONTEND=noninteractive apt -y install $HAIQ_QT_MODULES debhelper lsb-release fakeroot build-essential
+      shell: bash
+
+    - name: Install Qt on Linux (container)
+      if: (matrix.config.os == 'linux') && matrix.config.debian_container && !matrix.config.appimage
+      run: |
+        sudo docker run -v `pwd`:/build --rm --name "debian-build" -d "${{ matrix.config.debian_container }}" sleep 1d
+        sudo docker exec -e DEBIAN_FRONTEND=noninteractive "debian-build" apt update
+        sudo docker exec -e DEBIAN_FRONTEND=noninteractive "debian-build" apt -y install $HAIQ_QT_MODULES debhelper lsb-release fakeroot build-essential
+      shell: bash
+
+    # Install dependencies using vcpkg
+    #################################################
+
+    - name: Install OpenSSL on Windows (vcpkg)
+      if: (matrix.config.os == 'windows')
+      run: |
+        c:\vcpkg\vcpkg install --recurse openssl sentry-native --triplet ${{ matrix.config.vcpkg_triplet }}
+        echo VCPKG_PATH=%VCPKG_INSTALLATION_ROOT%\installed\${{ matrix.config.vcpkg_triplet }} >> %GITHUB_ENV%
+      shell: cmd
+
+    # Checkout
+    #################################################
+
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    # Build on Windows
+    #################################################
+
+    - name: Build on Windows
+      if: (matrix.config.os == 'windows')
+      run: |
+        call "${{ matrix.config.environment_script }}"
+        qmake CONFIG+=release ${{ matrix.config.qmake_extra_config }} VCPKG_PATH=%VCPKG_PATH%
+        nmake
+        nmake installer
+      shell: cmd
+
+    - name: Upload Installer on Windows
+      if: (matrix.config.os == 'windows')
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.config.artifact }}
+        path: "*.exe"
+
+    # Build for Linux
+    #################################################
+
+    - name: Build on Linux (native)
+      if: (matrix.config.os == 'linux') && !matrix.config.debian_container && !matrix.config.appimage
+      run: |
+        qmake CONFIG+=release ${{ matrix.config.qmake_extra_config }}
+        make package
+      shell: bash
+
+    - name: Build on Linux (container)
+      if: (matrix.config.os == 'linux') && matrix.config.debian_container && !matrix.config.appimage
+      run: |
+        sudo docker exec -w /build "debian-build" qmake CONFIG+=release ${{ matrix.config.qmake_extra_config }}
+        sudo docker exec -w /build "debian-build" make package
+      shell: bash
+
+    - name: Upload DEB on Linux
+      uses: actions/upload-artifact@v2
+      if: (matrix.config.os == 'linux') && !matrix.config.appimage
+      with:
+        name: ${{ matrix.config.artifact }}
+        path: "*.deb"
+
+    # Build for Android
+    #################################################
+
+    - name: Set Android env vars
+      if: (matrix.config.os == 'android')
+      run: |
+        echo "ANDROID_NDK_ROOT=${ANDROID_NDK_LATEST_HOME}" >> $GITHUB_ENV
+        echo "ANDROID_BUILD_TOOLS_REVISION=30.0.3" >> $GITHUB_ENV
+
+    - name: Checkout Android openssl
+      if: (matrix.config.os == 'android')
+      run: |
+        cd $ANDROID_SDK_ROOT
+        echo "Checking out KDAB's OpenSSL into $ANDROID_SDK_ROOT"
+        sudo git clone https://github.com/KDAB/android_openssl.git
+
+    - name: Build on Linux (Android)
+      if: (matrix.config.os == 'android')
+      run: |
+        echo "Using NDK: $ANDROID_NDK_ROOT"
+        echo "Using Build Tools: $ANDROID_BUILD_TOOLS_REVISION"
+        qmake -spec android-clang CONFIG+=release CONFIG+=qtquickcompiler ${{ matrix.config.qmake_extra_config }}
+        make
+        make package
+      shell: bash
+
+    - name: Upload Android APK on Linux
+      uses: actions/upload-artifact@v2
+      if: (matrix.config.os == 'android')
+      with:
+        name: ${{ matrix.config.artifact }}
+        path: "*.apk"
+
+    # Build for macOS
+    #################################################
+
+    - name: Build for macOS
+      if: (matrix.config.os == 'macos')
+      run: |
+        qmake CONFIG+=release ${{ matrix.config.qmake_extra_config }} VCPKG_PATH=$VCPKG_PATH
+        make
+        make installer
+      shell: bash
+
+    - name: Upload DMG for macOS
+      uses: actions/upload-artifact@v2
+      if: (matrix.config.os == 'macos')
+      with:
+        name: ${{ matrix.config.artifact }}
+        path: "*.dmg"
+
+    # Build for iOS
+    #################################################
+
+    - name: Fix qmake script for iOS
+      if: (matrix.config.os == 'ios')
+      run: |
+        # fix a bug in aqtinstall - the qmake script for iOS isn't patched correctly
+        cd ../Qt/${{ matrix.config.qt_version }}
+        ln -s macos clang_64
+      shell: bash
+
+    - name: Build for iOS
+      if: (matrix.config.os == 'ios')
+      run: |
+        qmake -spec macx-ios-clang CONFIG+=iphoneos CONFIG+=device CONFIG+=qtquickcompiler QMAKE_DEVELOPMENT_TEAM=${{ secrets.IOS_DEV_TEAM }} QMAKE_PROVISIONING_PROFILE=${{ secrets.IOS_PROV_PROFILE }} CONFIG+=release ${{ matrix.config.qmake_extra_config }}
+        make
+        make package || true
+      shell: bash
+
+    - name: Upload Bundle for iOS
+      uses: actions/upload-artifact@v2
+      if: (matrix.config.os == 'ios')
+      with:
+        name: ${{ matrix.config.artifact }}
+        path: "*.app"
+
+  # RELEASE
+  #################################################
+
+  release:
+    needs: [ build ]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download Artifacts to Release
+      uses: actions/download-artifact@v2
+      with:
+        path: 'artifacts'
+
+    - name: Rename Artifacts
+      run: |
+        find artifacts -mindepth 2 -type f -print0 | while read -d $'\0' a; do
+          d="$(dirname $a)"
+          mv "$a" "${d}-$(basename $a)"
+          rm -rf "$d"
+        done
+        echo "Artifacts after flattening:"
+        find artifacts
+      shell: bash
+
+    - name: Release
+      uses: docker://antonyurchenko/git-release:latest
+      # uses: rgriebl/git-release@testing
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: artifacts/*
