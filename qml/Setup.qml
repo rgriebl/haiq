@@ -30,9 +30,9 @@ ApplicationWindow {
 
     ColumnLayout {
         id: layout
-        spacing: font.pixelSize /2
+        spacing: font.pixelSize / 2
         anchors.fill: parent
-        anchors.margins: spacing
+        anchors.margins: (root.visibility == Window.Windowed) ? 2 * spacing : 12 * spacing
 
         Label {
             font.bold: true

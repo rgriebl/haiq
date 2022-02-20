@@ -1,8 +1,8 @@
-MIN_QT_VERSION = 5.14.0
+MIN_QT_VERSION = 5.15.0
 
 NAME        = "HAiQ"
 DESCRIPTION = "$$NAME - QML based UIs for Home-Assistant."
-COPYRIGHT   = "2004-2021 Robert Griebl"
+COPYRIGHT   = "2004-2022 Robert Griebl"
 GITHUB_URL  = "github.com/rgriebl/haiq"
 
 

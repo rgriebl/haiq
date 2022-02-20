@@ -64,7 +64,15 @@ ApplicationWindow {
                 onTriggered: Qt.openUrlExternally("http://ccu2.home/")
             }
             Labs.MenuItem { separator: true }
+            Labs.MenuItem {
+                text: qsTr("About")
+                onTriggered: aboutDialog.show()
 
+                Labs.Dialog {
+                    id: aboutDialog
+                }
+            }
+            Labs.MenuItem { separator: true }
             Labs.MenuItem {
                 text: qsTr("Quit")
                 onTriggered: Qt.quit()

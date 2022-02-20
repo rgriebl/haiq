@@ -22,7 +22,7 @@ jobs:
         config:
         - name: "Windows 64bit"
           artifact: "Windows-x64"
-          runs-on: windows-latest
+          runs-on: windows-2019
           os: windows
           qt_version: '5.15.2'
           qt_arch: 'win64_msvc2019_64'
@@ -90,7 +90,6 @@ jobs:
       if: (matrix.config.os != 'linux') || matrix.config.appimage
       uses: actions/cache@v1
       with:
-        py7zrversion: '>=0.17.0' # https://github.com/miurahr/aqtinstall/issues/438
         path: ../Qt
         key: ${{ matrix.config.os }}-${{ matrix.config.qt_target }}-${{ matrix.config.qt_arch }}-QtCache
 
@@ -107,6 +106,7 @@ jobs:
         arch: ${{ matrix.config.qt_arch }}
         target: ${{ matrix.config.qt_target || 'desktop' }}
         tools: ${{ matrix.config.qt_tools }}
+        py7zrversion: '>=0.17.0' # https://github.com/miurahr/aqtinstall/issues/438
 
     - name: Install Qt from qt.io (OS version for cross-compiling)
       if: (matrix.config.os == 'android') || (matrix.config.os == 'ios')
@@ -117,29 +117,30 @@ jobs:
         modules: 'qttools'
         target: 'desktop'
         tools: ${{ matrix.config.qt_tools }}
+        py7zrversion: '>=0.17.0' # https://github.com/miurahr/aqtinstall/issues/438
 
-    - name: Install Qt on Linux (native/appimage)
+    - name: Install Qt from Linux Distro (native/appimage)
       if: (matrix.config.os == 'linux') && !matrix.config.debian_container
       run: |
-        sudo DEBIAN_FRONTEND=noninteractive apt update
+        sudo DEBIAN_FRONTEND=noninteractive apt -y update
         sudo DEBIAN_FRONTEND=noninteractive apt -y install $HAIQ_QT_MODULES debhelper lsb-release fakeroot build-essential
       shell: bash
 
-    - name: Install Qt on Linux (container)
+    - name: Install Qt from Linux Distro (container)
       if: (matrix.config.os == 'linux') && matrix.config.debian_container && !matrix.config.appimage
       run: |
         sudo docker run -v `pwd`:/build --rm --name "debian-build" -d "${{ matrix.config.debian_container }}" sleep 1d
-        sudo docker exec -e DEBIAN_FRONTEND=noninteractive "debian-build" apt update
+        sudo docker exec -e DEBIAN_FRONTEND=noninteractive "debian-build" apt -y update
         sudo docker exec -e DEBIAN_FRONTEND=noninteractive "debian-build" apt -y install $HAIQ_QT_MODULES debhelper lsb-release fakeroot build-essential
       shell: bash
 
     # Install dependencies using vcpkg
     #################################################
 
-    - name: Install OpenSSL on Windows (vcpkg)
+    - name: Install OpenSSL for Windows (vcpkg)
       if: (matrix.config.os == 'windows')
       run: |
-        c:\vcpkg\vcpkg install --recurse openssl sentry-native --triplet ${{ matrix.config.vcpkg_triplet }}
+        c:\vcpkg\vcpkg install --recurse openssl --triplet ${{ matrix.config.vcpkg_triplet }}
         echo VCPKG_PATH=%VCPKG_INSTALLATION_ROOT%\installed\${{ matrix.config.vcpkg_triplet }} >> %GITHUB_ENV%
       shell: cmd
 
@@ -150,10 +151,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Build on Windows
+    # Build for Windows
     #################################################
 
-    - name: Build on Windows
+    - name: Build for Windows
       if: (matrix.config.os == 'windows')
       run: |
         call "${{ matrix.config.environment_script }}"
@@ -162,7 +163,7 @@ jobs:
         nmake installer
       shell: cmd
 
-    - name: Upload Installer on Windows
+    - name: Upload Windows Installer
       if: (matrix.config.os == 'windows')
       uses: actions/upload-artifact@v2
       with:
@@ -172,21 +173,21 @@ jobs:
     # Build for Linux
     #################################################
 
-    - name: Build on Linux (native)
+    - name: Build for Linux (native)
       if: (matrix.config.os == 'linux') && !matrix.config.debian_container && !matrix.config.appimage
       run: |
         qmake CONFIG+=release ${{ matrix.config.qmake_extra_config }}
         make package
       shell: bash
 
-    - name: Build on Linux (container)
+    - name: Build for Linux (container)
       if: (matrix.config.os == 'linux') && matrix.config.debian_container && !matrix.config.appimage
       run: |
         sudo docker exec -w /build "debian-build" qmake CONFIG+=release ${{ matrix.config.qmake_extra_config }}
         sudo docker exec -w /build "debian-build" make package
       shell: bash
 
-    - name: Upload DEB on Linux
+    - name: Upload Linux DEB
       uses: actions/upload-artifact@v2
       if: (matrix.config.os == 'linux') && !matrix.config.appimage
       with:

@@ -139,7 +139,7 @@ Pane {
             SqueezeBoxRadio {
                 id: sbRadio
                 anchors.fill: parent
-                entity: "media_player.wetab"
+                entity: "media_player.kitchen"
             }
 
         }
