@@ -139,7 +139,7 @@ Pane {
             SqueezeBoxRadio {
                 id: sbRadio
                 anchors.fill: parent
-                entity: "media_player.kitchen"
+                entity: "media_player.kueche"
             }
 
         }
@@ -164,6 +164,8 @@ Pane {
                     onClicked: Window.window.showWeather()
                 }
 
+                Tracer { }
+
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: weatherRow.font.pixelSize / 2
@@ -184,8 +186,12 @@ Pane {
 
                         WeatherTemperatureLabel {
                             id: weatherTemp
+                            Layout.fillWidth: true
                             verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
                             font.pixelSize: weatherRow.font.pixelSize * 3
+                            minimumPixelSize: font.pixelSize / 2
+                            fontSizeMode: Text.Fit
                             showFeelsLike: true
 
                             Component.onCompleted: {
@@ -217,6 +223,7 @@ Pane {
                                 forecast = state
                             })
                         }
+                        Tracer { }
                     }
                 }
             }

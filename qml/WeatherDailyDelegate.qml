@@ -58,7 +58,6 @@ Tile {
             anchors.margins: column.width / 10
             
             name: "darksky/" + model.icon
-            color: tempHigh.color
             size: column.width
         }
         
@@ -84,7 +83,6 @@ Tile {
             anchors.right: column.right
             anchors.left: tempIcon.right
             height: 1
-            color: tempHigh.color
         }
         WeatherTemperatureLabel {
             id: tempLow

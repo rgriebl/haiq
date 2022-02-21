@@ -301,6 +301,7 @@ jobs:
       uses: docker://antonyurchenko/git-release:latest
       # uses: rgriebl/git-release@testing
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        ALLOW_EMPTY_CHANGELOG: "true"
       with:
         args: artifacts/*
