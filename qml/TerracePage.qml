@@ -123,7 +123,7 @@ Control {
             Layout.fillWidth: true
 
             property string entity: 'media_player.terrasse'
-            property string masterEntity: 'media_player.wetab'
+            property string masterEntity: 'media_player.kueche'
             property real volume : 0
             property bool synced : false
 

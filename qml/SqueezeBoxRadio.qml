@@ -204,10 +204,10 @@ Control {
         SqueezeBoxVolume {
             id: volumeDialog
             entities: [
-                { "entity": root.entity,             "name": "Küche",     "master": true },
-                { "entity": "media_player.tina",     "name": "Wohnzimmer" },
-                { "entity": "media_player.terrasse", "name": "Terrasse" },
-                { "entity": "media_player.keller",   "name": "Waschküche" }
+                { "entity": root.entity,               "name": "Küche",     "master": true },
+                { "entity": "media_player.wohnzimmer", "name": "Wohnzimmer" },
+                { "entity": "media_player.terrasse",   "name": "Terrasse" },
+                { "entity": "media_player.keller",     "name": "Waschküche" }
             ]
         }
 

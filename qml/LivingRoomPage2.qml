@@ -194,8 +194,8 @@ Control {
             spacing: root.columnSpacing
             Layout.fillWidth: true
 
-            property string entity: 'media_player.tina'
-            property string masterEntity: 'media_player.wetab'
+            property string entity: 'media_player.wohnzimmer'
+            property string masterEntity: 'media_player.kueche'
             property real volume : 0
             property bool synced : false
 
