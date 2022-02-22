@@ -119,8 +119,10 @@ int main(int argc, char *argv[])
         }
     }
 
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
     qputenv("QT_IM_MODULE", "qtvirtualkeyboard");
     qputenv("QT_VIRTUALKEYBOARD_DESKTOP_DISABLE", "1");
+#endif
 
     QCoreApplication::setApplicationName(HAIQ_NAME);
     QCoreApplication::setApplicationVersion(HAIQ_VERSION);
