@@ -40,21 +40,21 @@ echo -n "Checking git release tag v$version... "
 ! git tag -l | grep "^v" | cut -c2- | grep -s -q "$version" 
 status "ok" "tag already exists"
 
-echo -n "Checking CHANGELOG main entry... "
-grep -s -q CHANGELOG.md -e "^## \\[$version\\]"
-status "ok" "not found"
-
-echo -n "Checking CHANGELOG main entry date... "
-grep -s -q CHANGELOG.md -e "^## \\[$version\\] - $(date +%Y-%m-%d)\$"
-status "ok" "not from today"
-
-echo -n "Checking CHANGELOG link entry... "
-grep -s -q CHANGELOG.md -e "^\\[$version\\]: https://github.com/rgriebl/${project}/releases/tag/v"
-status "ok" "not found"
-
-echo -n "Checking CHANGELOG link entry tag... "
-grep -s -q CHANGELOG.md -e "^\\[$version\\]: https://github.com/rgriebl/${project}/releases/tag/v$version\$"
-status "ok" "links wrong tag"
+#echo -n "Checking CHANGELOG main entry... "
+#grep -s -q CHANGELOG.md -e "^## \\[$version\\]"
+#status "ok" "not found"
+#
+#echo -n "Checking CHANGELOG main entry date... "
+#grep -s -q CHANGELOG.md -e "^## \\[$version\\] - $(date +%Y-%m-%d)\$"
+#status "ok" "not from today"
+#
+#echo -n "Checking CHANGELOG link entry... "
+#grep -s -q CHANGELOG.md -e "^\\[$version\\]: https://github.com/rgriebl/${project}/releases/tag/v"
+#status "ok" "not found"
+#
+#echo -n "Checking CHANGELOG link entry tag... "
+#grep -s -q CHANGELOG.md -e "^\\[$version\\]: https://github.com/rgriebl/${project}/releases/tag/v$version\$"
+#status "ok" "links wrong tag"
 
 echo
 
