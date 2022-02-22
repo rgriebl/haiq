@@ -30,7 +30,7 @@ TabletView {
     font.bold: true
     font.pixelSize: height / 27
 
-    property real defaultRowSpacing: font.pixelSize / 2
+    property real defaultRowSpacing: font.pixelSize // / 2
     property real defaultColumnSpacing: font.pixelSize / 4
 
     property Component defaultOverlay: Rectangle {
