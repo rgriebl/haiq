@@ -153,6 +153,7 @@ TabletView {
             KitchenPage { }
             WeatherPage { entity: "sensor.wetter" }
             AlarmPage { }
+            HomeAssistantPage { }
             BrowserPage { }
         }
 
@@ -180,13 +181,13 @@ TabletView {
                 anchors.centerIn: parent
                 columns: 1
                 rows: children.length
-                rowSpacing: defaultRowSpacing
+                rowSpacing: defaultRowSpacing / 2
                 columnSpacing: defaultColumnSpacing
 
                 SceneButton {
                     id: homeButton
                     Layout.margins: defaultRowSpacing
-                    icon.name: 'mdi/home'
+                    icon.name: 'mdi/view-grid'
                     scale: 2
                     checkable: true
                     checked: true
@@ -204,6 +205,14 @@ TabletView {
                     id: alarmButton
                     Layout.margins: defaultRowSpacing
                     icon.name: 'mdi-rounded/alarm'
+                    scale: 2
+                    checkable: true
+                    ButtonGroup.group: mainButtons
+                }
+                SceneButton {
+                    id: haButton
+                    Layout.margins: defaultRowSpacing
+                    icon.name: 'mdi/home-assistant'
                     scale: 2
                     checkable: true
                     ButtonGroup.group: mainButtons

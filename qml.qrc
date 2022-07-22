@@ -57,5 +57,6 @@
         <file>qml/WebTabStack.qml</file>
         <file>qml/WebToolButton.qml</file>
         <file>qml/TemperatureProbe.qml</file>
+        <file>qml/HomeAssistantPage.qml</file>
     </qresource>
 </RCC>

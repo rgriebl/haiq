@@ -122,5 +122,7 @@
         <file>icons/mdi/close.svg</file>
         <file>icons/mdi/menu.svg</file>
         <file>icons/mdi/backspace.svg</file>
+        <file>icons/mdi/home-assistant.svg</file>
+        <file>icons/mdi/view-grid.svg</file>
     </qresource>
 </RCC>

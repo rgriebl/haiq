@@ -70,7 +70,7 @@ Control {
             spacing: root.columnSpacing
             Layout.fillWidth: true
 
-            property string entity: 'light.oeq0105649'
+            property string entity: 'light.esstisch_licht_switch_0'
             property string entityState: ''
 
             SceneButton {
