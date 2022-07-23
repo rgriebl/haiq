@@ -11,11 +11,11 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.XmlListModel 2.0
-import QtQml 2.2
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQml.XmlListModel
+import QtQml
 
 ScrollView {
     id: root
@@ -57,9 +57,9 @@ ScrollView {
 
             query: "/DistanceMatrixResponse/row/element"
 
-            XmlRole { name: "duration"; query: "duration/value/number()" }
-            XmlRole { name: "durationInTraffic"; query: "duration_in_traffic/value/number()" }
-            XmlRole { name: "realtime"; query: "boolean(realtime)" }
+            XmlListModelRole { name: "duration"; elementName: "duration/value" }
+            XmlListModelRole { name: "durationInTraffic"; elementName: "duration_in_traffic/value" }
+            XmlListModelRole { name: "realtime"; elementName: "realtime" }
 
             onStatusChanged: {
                 if (status == XmlListModel.Error)
@@ -80,7 +80,7 @@ ScrollView {
             onPressAndHold: mapsModel.reload()
         }
 
-        headerPositioning: ListView.PullBackHeader
+        //headerPositioning: ListView.PullBackHeader
         header: Item {
             width: parent.width
             height: normalHeader.font.pixelSize * 1.5
@@ -118,7 +118,7 @@ ScrollView {
                 text: model.index < 0 ? '' : Object.keys(root.destinations[model.index])[0]
             }
             Label {
-                property int minutes: duration / 60
+                property int minutes: Number(duration) / 60
 
                 id: normalCol
                 anchors.right: normalUnitCol.left
@@ -135,7 +135,7 @@ ScrollView {
                 font.pixelSize: normalCol.font.pixelSize / 2
             }
             Label {
-                property int minutesDelay: (durationInTraffic / 60) - normalCol.minutesLeft
+                property int minutesDelay: (Number(durationInTraffic) / 60) - normalCol.minutesLeft
 
                 id: delayedCol
                 anchors.right: delayedUnitCol.left
@@ -155,4 +155,3 @@ ScrollView {
         }
     }
 }
-

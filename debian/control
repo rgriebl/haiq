@@ -2,17 +2,17 @@ Source: haiq
 Section: embedded
 Priority: extra
 Maintainer: Robert Griebl <robert@griebl.org>
-Build-Depends: debhelper (>= 7.0.50~), qtbase5-dev (>= 5.15), qt5-qmake (>= 5.15),
- qtbase5-dev-tools (>= 5.15), qtchooser (>= 5.15), qtdeclarative5-private-dev (>= 5.15),
- libqt5websockets5-dev (>= 5.15), libqt5svg5-dev (>= 5.15), qtdeclarative5-dev (>= 5.15),
- qtmultimedia5-dev (>= 5.15), qtquickcontrols2-5-dev (>= 5.15)
+Build-Depends: debhelper (>= 7.0.50~), qt6-base-dev (>= 6.2), qmake6 (>= 6.2),
+ qt6-base-dev-tools (>= 6.2), qtchooser (>= 6.2), qt6-declarative-private-dev (>= 6.2),
+ libqt6websockets6-dev (>= 6.2), libqt6svg6-dev (>= 6.2), qt6-declarative-dev (>= 6.2),
+ qt6-multimedia-dev (>= 6.2), qt6-declarative-private-dev (>= 6.2)
 Standards-Version: 4.5.0
 
 Package: haiq
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, qml-module-qtquick2, qml-module-qtquick-xmllistmodel,
- qml-module-qtquick-virtualkeyboard, qml-module-qtquick-shapes,
- qml-module-qtquick-controls2, qml-module-qtgraphicaleffects, qml-module-qt-labs-settings,
- qml-module-qtmultimedia, qml-module-qtquick-dialogs, qml-module-qtquick-layouts
+Depends: ${shlibs:Depends}, ${misc:Depends}, qml6-module-qtquick, qml6-module-qtqml-xmllistmodel,
+ qml6-module-qtquick-virtualkeyboard, qml6-module-qtquick-shapes,
+ qml6-module-qtquick-controls, qml6-module-qt5compat-graphicaleffects, qml6-module-qt-labs-settings,
+ qml6-module-qtmultimedia, qml6-module-qtquick-dialogs, qml6-module-qtquick-layouts
 Description: HAiQ - Home-Assistant Interface using Qt/QML
  HAiQ is a modular Qt/QML based framework to create specialised UIs for HomeAssistant

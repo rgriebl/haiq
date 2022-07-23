@@ -11,8 +11,8 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQml 2.0
-import QtQuick 2.0
+import QtQml
+import QtQuick
 
 Rectangle {
 	width: text.paintedWidth

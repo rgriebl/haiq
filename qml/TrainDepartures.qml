@@ -11,11 +11,11 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.XmlListModel 2.0
-import QtQml 2.12
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQml.XmlListModel
+import QtQml
 
 Control {
     id: root
@@ -58,15 +58,17 @@ Control {
             // 1004020 == Zorneding the rest of the query string is from Oeffi's backend
             // https://github.com/schildbach/public-transport-enabler - Bayern / Efa provider
             // NB: the MVV provider does not support realtime infos!
-            source: "http://mobile.defas-fgi.de/beg/XML_DM_REQUEST?outputFormat=XML&language=de&type_dm=stop&name_dm=1004020&useRealtime=1&mode=direct&ptOptionsActive=1&mergeDep=1&limit=10"
-            query: "/efa/dps/dp[m/n='S-Bahn']"
+            source: "http://mobile.defas-fgi.de/beg/XML_DM_REQUEST?outputFormat=XML&language=de&type_dm=stop&name_dm=1004020&useRealtime=1&mode=direct&ptOptionsActive=1&mergeDep=1&limit=10&includedMeans=1"
+            query: "/efa/dps/dp"
 
-            XmlRole { name: "line"; query: "m/nu/string()" }
-            XmlRole { name: "destination"; query: "m/des/string()" }
-            XmlRole { name: "realtime"; query: "boolean(realtime)" }
+            XmlListModelRole { name: "line"; elementName: "m/nu" }
+            XmlListModelRole { name: "destination"; elementName: "m/des" }
+            XmlListModelRole { name: "realtime"; elementName: "realtime" }
             // we need to convert the German date/time spec to an ISO datetime spec
-            XmlRole { name: "timePlanned"; query: 'concat(substring(st/da,1,4),"/",substring(st/da,5,2),"/",substring(st/da,7,2),"T",dt/t/string())' }
-            XmlRole { name: "timeExpected"; query: 'concat(substring(st/rda,1,4),"/",substring(st/rda,5,2),"/",substring(st/rda,7,2),"T",dt/rt/string())' }
+            XmlListModelRole { name: "datePlanned"; elementName: 'st/da' }
+            XmlListModelRole { name: "timePlanned"; elementName: 'st/t' }
+            XmlListModelRole { name: "dateExpected"; elementName: 'st/rda' }
+            XmlListModelRole { name: "timeExpected"; elementName: 'st/rt' }
 
             onStatusChanged: {
                 if (status == XmlListModel.Error)
@@ -84,7 +86,7 @@ Control {
             onTriggered: mvvModel.reload()
         }
 
-        headerPositioning: ListView.PullBackHeader
+        //headerPositioning: ListView.PullBackHeader
         header: Item {
             width: ListView.view.width
             height: normalHeader.font.pixelSize * 1.5
@@ -111,10 +113,14 @@ Control {
         }
 
         delegate: Item {
+            id: delegate
             width: ListView.view.width
             height: root.font.pixelSize * 1.5
 
             property real dx: width * (1 - root.textPercentage) / 2
+
+            property date expected: Date.fromLocaleString(Qt.locale(), dateExpected + timeExpected, "yyyyMMddhhmm")
+            property date planned: Date.fromLocaleString(Qt.locale(), datePlanned + timePlanned, "yyyyMMddhhmm")
 
             function sbahnColor(sline) {
                 switch(sline) {
@@ -164,7 +170,7 @@ Control {
                 elide: Text.ElideRight
             }
             Label {
-                property int minutesLeft: (Date.parse(timePlanned) - Date.now()) / (60 * 1000)
+                property int minutesLeft: (delegate.planned - Date.now()) / (60 * 1000)
 
                 id: normalCol
                 anchors.right: normalUnitCol.left
@@ -181,7 +187,7 @@ Control {
                 font.pixelSize: normalCol.font.pixelSize / 2
             }
             Label {
-                property int minutesLate: realtime ? ((Date.parse(timeExpected) - Date.now()) / (60 * 1000) - normalCol.minutesLeft) : -1
+                property int minutesLate: realtime ? ((delegate.expected - Date.now()) / (60 * 1000) - normalCol.minutesLeft) : -1
 
                 id: delayedCol
                 anchors.right: delayedUnitCol.left

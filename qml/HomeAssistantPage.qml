@@ -11,9 +11,9 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtWebEngine 1.11
+import QtQuick
+import QtQuick.Controls
+import QtWebEngine
 
 Page {
     id: root

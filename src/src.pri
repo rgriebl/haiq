@@ -1,7 +1,18 @@
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
-QT = core gui gui-private qml quick websockets qml-private multimedia svg quickcontrols2
+QT = core gui gui-private qml quick websockets qml-private svg quickcontrols2
+
+haiq_use_webengine {
+  QT *= webenginequick
+  DEFINES *= HAIQ_USE_WEBENGINE
+}
+
+haiq_use_multimedia {
+  QT *= multimedia
+  DEFINES *= HAIQ_USE_MULTIMEDIA
+}
+
 
 include(homeassistant/homeassistant.pri)
 include(squeezebox/squeezebox.pri)

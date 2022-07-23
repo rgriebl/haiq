@@ -296,10 +296,10 @@ void ICalendarParser::parseValue()
         QRegularExpression re("^[+-](\\d\\d)(\\d\\d)(\\d\\d)?$");
         auto match = re.match(value);
         if (match.hasMatch()) {
-            int hh = match.capturedRef(1).toInt();
-            int mm = match.capturedRef(2).toInt();
+            int hh = match.captured(1).toInt();
+            int mm = match.captured(2).toInt();
             int ss = match.capturedLength() < 3 ? 0
-                                                : match.capturedRef(3).toInt();
+                                                : match.captured(3).toInt();
 
             int offsetSec = ss + 60 * mm + 60 * 60 * hh;
             if (value[0] == '-')
@@ -380,7 +380,7 @@ QDateTime ICalendarParser::parseDateTime(const QString &dtString, const QString 
     } else {
         dt = QDateTime::fromString(dtString, "yyyyMMdd'T'HHmmss");
         if (tz.isValid()) {
-            dt.setTimeSpec(Qt::TimeZone);
+            //dt.setTimeSpec(Qt::TimeZone);
             dt.setTimeZone(tz);
         }
     }

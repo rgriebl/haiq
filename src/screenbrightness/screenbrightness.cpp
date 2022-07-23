@@ -137,8 +137,8 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
 
         QObject::connect(this, &ScreenBrightness::effectiveBrightnessChanged,
                          this, [maxBrightness, ddcVcp, ddcDevice, forceBlank](qreal brightness) {
-//            qDebug() << "Setting effective brightness to" << brightness
-//                     << "(in hw units:" << qBound(0, int(maxBrightness * brightness), maxBrightness) << ")";
+            qDebug() << "Setting effective brightness to" << brightness
+                     << "(in hw units:" << qBound(0, int(maxBrightness * brightness), maxBrightness) << ")";
 
             QFile ddc(ddcDevice);
             if (ddc.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
@@ -161,6 +161,8 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
                         // we need to stop the rendering during standby, because KMS/DRM will not
                         // accept page flips int this state, leading to qWarnings for each frame
                         // QML is trying to render
+                        qWarning() << "Monitor power state:" << (b ? "on" : "standby");
+
                         const auto windows = qApp->allWindows();
                         for (auto &window : windows) {
                             if (auto quickWindow = qobject_cast<QQuickWindow *>(window)) {
@@ -455,8 +457,8 @@ void ScreenBrightness::setScreenSaverState(ScreenBrightness::ScreenSaverState ne
     }
 
     if (m_screenSaverState != newState) {
-        qDebug() << "Screensaver state change from" << m_screenSaverState << "to" << newState
-                   << "(brightness:" << newBrightness << ")";
+        //qDebug() << "Screensaver state change from" << m_screenSaverState << "to" << newState
+        //           << "(brightness:" << newBrightness << ")";
 
         if (m_screenSaverState == IsBlanked || newState == IsBlanked)
             QMetaObject::invokeMethod(this, &ScreenBrightness::blankChanged);

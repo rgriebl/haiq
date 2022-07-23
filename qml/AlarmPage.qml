@@ -11,10 +11,10 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.12
-import QtMultimedia 5.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtMultimedia
 import org.griebl.haiq 1.0
 
 
@@ -119,9 +119,11 @@ Pane {
                 anchors.fill: parent
                 MediaPlayer {
                     id: alarmSound
-                    audioRole: MediaPlayer.AlarmRole
+                    //audioRole: MediaPlayer.AlarmRole
                     source: Qt.resolvedUrl('/sounds/alarm.wav')
-                    volume: 0.7
+                    audioOutput: AudioOutput {
+                        volume: 0.7
+                    }
                 }
 
                 onTimerTriggered: {

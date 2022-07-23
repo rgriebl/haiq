@@ -11,11 +11,11 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQml 2.12
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.Window 2.12
+import QtQml
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
 
 
 Tile {
@@ -79,7 +79,7 @@ Tile {
             font.pixelSize: delegate.fontSize * 2
             padding: 0
             
-            temperature: model.apparent_temperature
+            temperature: Number(model.apparent_temperature)
         }
         SvgIcon {
             id: tempIcon

@@ -11,11 +11,11 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQml 2.12
-import QtQuick.Window 2.12
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
+import QtQml
+import QtQuick.Window
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 import org.griebl.haiq 1.0
 
 
@@ -250,19 +250,16 @@ Pane {
             Layout.preferredWidth: grid.preferredTileWidth(this)
             Layout.preferredHeight: grid.preferredTileHeight(this)
 
-            ColumnLayout {
+            DigitalClock {
+                id: clock
+
                 anchors.fill: parent
                 anchors.margins: font.pixelSize / 2
-                DigitalClock {
-                    id: clock
 
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    TapHandler {
-                        onTapped: clock.showSeconds = !clock.showSeconds
-                        onLongPressed: parent.Window.window.showTimer()
-                    }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: clock.showSeconds = !clock.showSeconds
+                    onPressAndHold: parent.Window.window.showTimer()
                 }
             }
         }
