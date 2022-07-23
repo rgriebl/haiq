@@ -11,13 +11,13 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQuick.Window 2.12
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Controls.Universal 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.VirtualKeyboard 2.15
-import QtQuick.VirtualKeyboard.Settings 2.15
+import QtQuick.Window
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Universal
+import QtQuick.Layouts
+import QtQuick.VirtualKeyboard
+import QtQuick.VirtualKeyboard.Settings
 import org.griebl.haiq 1.0
 
 
@@ -75,6 +75,12 @@ TabletView {
 
     Component.onCompleted: {
         drawer.dragMargin = 50
+
+    drawer.items.insert(0, {
+            text: "Nachts ausschalten",
+            iconName: "",
+            action: function() { }
+        })
 
         ScreenBrightness.brightness = 1
         ScreenBrightness.normalBrightness = 1

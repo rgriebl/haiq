@@ -11,10 +11,10 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQml 2.12
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
+import QtQml
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 import org.griebl.calendar 1.0
 
 Control {
@@ -50,7 +50,7 @@ Control {
 
         model: UpcomingCalendarEntries {
             id: upcoming
-            calendar: Calendar
+            calendar: MainCalendar
             property int lastDate: -1
 
             function updateFromTo() {

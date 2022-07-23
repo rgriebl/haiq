@@ -11,13 +11,13 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQml 2.12
-import QtQuick 2.12
-import QtQuick.Window 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
+import QtQml
+import QtQuick
+import QtQuick.Window
+import QtQuick.Controls
+import QtQuick.Layouts
 import org.griebl.haiq 1.0
-import Qt.labs.platform 1.1
+import Qt.labs.platform as Labs
 
 
 ApplicationWindow {
@@ -39,7 +39,7 @@ ApplicationWindow {
     property real defaultRowSpacing: font.pixelSize
     property real defaultColumnSpacing: font.pixelSize / 2
 
-    SystemTrayIcon {
+    Labs.SystemTrayIcon {
         id: trayIcon
         icon.source: "../icons/haiq.svg"
         icon.mask: true
@@ -48,8 +48,8 @@ ApplicationWindow {
 
         onActivated: {
             switch (reason) {
-            case SystemTrayIcon.Trigger:
-            case SystemTrayIcon.DoubleClick:
+            case Labs.SystemTrayIcon.Trigger:
+            case Labs.SystemTrayIcon.DoubleClick:
                 if (root.visible) {
                     root.hide()
                 } else {

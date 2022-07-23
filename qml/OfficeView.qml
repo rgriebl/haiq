@@ -11,11 +11,11 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.Window 2.12
-import Qt.labs.platform 1.0 as Labs
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
+import Qt.labs.platform as Labs
 import org.griebl.haiq 1.0
 
 ApplicationWindow {
@@ -26,12 +26,12 @@ ApplicationWindow {
     property Control fontSizeDummy: Control { }
     font.pixelSize: fontSizeDummy.font.pixelSize * 1.3
 
-    onClosing: { close.accepted = false; hide() }
+    onClosing: function(close) { close.accepted = false; hide() }
     Shortcut { sequence: StandardKey.Cancel; onActivated: hide() }
 
     Labs.SystemTrayIcon {
         id: trayIcon
-        iconSource: "../icons/haiq.svg"
+        icon.source: "../icons/haiq.svg"
         tooltip: root.title
         visible: true
 
@@ -63,15 +63,15 @@ ApplicationWindow {
                 text: qsTr("Open HomeMatic Web-UI...")
                 onTriggered: Qt.openUrlExternally("http://ccu2.home/")
             }
-            Labs.MenuItem { separator: true }
-            Labs.MenuItem {
-                text: qsTr("About")
-                onTriggered: aboutDialog.show()
+//            Labs.MenuItem { separator: true }
+//            Labs.MenuItem {
+//                text: qsTr("About")
+//                onTriggered: aboutDialog.show()
 
-                Labs.Dialog {
-                    id: aboutDialog
-                }
-            }
+//                Labs.Dialog {
+//                    id: aboutDialog
+//                }
+//            }
             Labs.MenuItem { separator: true }
             Labs.MenuItem {
                 text: qsTr("Quit")
@@ -127,6 +127,7 @@ ApplicationWindow {
         minimumHeight = height
         maximumHeight = height
 
+        console.log("Tray icon:", trayIcon.available)
     }
 
     GridLayout {

@@ -35,6 +35,9 @@
 #include <QEventLoop>
 #include <QSaveFile>
 #include <QQuickStyle>
+#if defined(HAIQ_USE_WEBENGINE)
+#  include <QtWebEngineQuick/qtwebenginequickglobal.h>
+#endif
 
 #include "qtsingleapplication/qtsingleapplication.h"
 #include "homeassistant.h"
@@ -110,7 +113,11 @@ int main(int argc, char *argv[])
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--software-gl") == 0) {
             QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL, true);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QQuickWindow::setSceneGraphBackend(QSGRendererInterface::Software);
+#else
+            QQuickWindow::setSceneGraphBackend(u"software"_qs);
+#endif
             qDebug("USING SOFTWARE RENDERING");
         }
         if (strcmp(argv[i], "--verbose") == 0) {
@@ -130,8 +137,11 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("haiq.griebl.org");
     QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents);
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // for webengine
+#if defined(HAIQ_USE_WEBENGINE)
+    QtWebEngineQuick::initialize();
+#endif
 #if defined(Q_OS_WINDOWS)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+//    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
     QtSingleApplication app(QCoreApplication::applicationName(), argc, argv);
@@ -376,7 +386,7 @@ int main(int argc, char *argv[])
 
         UpcomingCalendarEntries::registerQmlTypes();
         Calendar *cal = new Calendar(calUrl, qApp);
-        engine.rootContext()->setContextProperty("Calendar", cal); //TODO: get rid of context property
+        engine.rootContext()->setContextProperty("MainCalendar", cal); //TODO: get rid of context property
 
         /////////////////////////////////
 
@@ -448,7 +458,11 @@ int main(int argc, char *argv[])
 
                 }
             protected:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) override
+#else
+                bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override
+#endif
                 {
                     Q_UNUSED(eventType)
                     MSG *msg = static_cast<MSG *>(message);

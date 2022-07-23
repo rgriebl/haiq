@@ -172,8 +172,6 @@ public:
     static SqueezeBoxServer *instance();
     static SqueezeBoxServer *createInstance(const QString &serverHost, int serverPort = 9090, QObject *parent = nullptr);
 
-    explicit SqueezeBoxServer(QObject *parent = nullptr);
-
     void setPlayerNameFilter(const QStringList &nameFilter);
 
     void setThisPlayerName(const QString &thisPlayerName);

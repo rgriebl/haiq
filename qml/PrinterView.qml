@@ -11,11 +11,11 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.Window 2.12
-import Qt.labs.platform 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
+import Qt.labs.platform as Labs
 import org.griebl.haiq 1.0
 
 ApplicationWindow {
@@ -44,32 +44,32 @@ ApplicationWindow {
         })
     }
 
-    SystemTrayIcon {
+    Labs.SystemTrayIcon {
         id: trayIcon
-        iconSource: "../icons/printer" + (offline ? "-off" : (idle ? "" : "-alert")) + ".svg"
+        icon.source: "../icons/printer" + (offline ? "-off" : (idle ? "" : "-alert")) + ".svg"
         tooltip: window.title + ":\n" + (offline ? "Ausgeschalten" : line)
         visible: true
 
         onActivated: {
             switch (reason) {
-            case SystemTrayIcon.Trigger:
-            case SystemTrayIcon.DoubleClick:
+            case Labs.SystemTrayIcon.Trigger:
+            case Labs.SystemTrayIcon.DoubleClick:
                 break;
 
-            case SystemTrayIcon.MiddleClick:
+            case Labs.SystemTrayIcon.MiddleClick:
                 Qt.quit();
                 break;
             }
         }
 
-        menu: Menu {
-            MenuItem {
+        menu: Labs.Menu {
+            Labs.MenuItem {
                 text: qsTr("Open Home-Assistant...")
                 onTriggered: Qt.openUrlExternally(HomeAssistant.baseUrl)
             }
-            MenuItem { separator: true }
+            Labs.MenuItem { separator: true }
 
-            MenuItem {
+            Labs.MenuItem {
                 text: qsTr("Quit")
                 onTriggered: Qt.quit()
             }
