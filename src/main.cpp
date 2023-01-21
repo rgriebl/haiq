@@ -48,7 +48,7 @@
 #include "version.h"
 #include "configuration.h"
 #include "exception.h"
-
+#include "appstarter.h"
 
 #if defined(Q_OS_ANDROID)
 #  include "openurlclient.h"
@@ -341,6 +341,11 @@ int main(int argc, char *argv[])
 
         HomeAssistant::registerQmlTypes();
         HomeAssistant::createInstance(haUrl, haAuthToken);
+
+        /////////////////////////////////
+
+        AppStarter::registerQmlTypes();
+        AppStarter::createInstance();
 
         /////////////////////////////////
 

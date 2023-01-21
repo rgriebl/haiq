@@ -160,7 +160,7 @@ TabletView {
             WeatherPage { entity: "sensor.wetter" }
             AlarmPage { }
             HomeAssistantPage { }
-            BrowserPage { }
+            FireFoxPage { }
         }
 
         Pane {
