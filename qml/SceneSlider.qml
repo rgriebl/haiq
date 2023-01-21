@@ -82,7 +82,7 @@ Slider {
             color: Universal.foreground
 
             // poor man's glow...
-            border.width: GraphicsInfo.api === GraphicsInfo.Software ? 2 : 0
+            border.width: /*GraphicsInfo.api === GraphicsInfo.Software ? 2 :*/ 0
             border.color: Universal.background
 
             gradient: {
@@ -124,7 +124,7 @@ Slider {
             anchors.fill: parent
             visible: control.sliderType === SceneSlider.VolumeType
             antialiasing: true
-            layer.enabled: GraphicsInfo.api !== GraphicsInfo.Software
+            layer.enabled: true /*GraphicsInfo.api !== GraphicsInfo.Software*/
             layer.samples: 4
             layer.effect: Glow {
                 radius: 10
@@ -177,7 +177,7 @@ Slider {
                 }
 
                 // poor man's glow...
-                strokeWidth: GraphicsInfo.api === GraphicsInfo.Software ? 2 : 0
+                strokeWidth: /*GraphicsInfo.api === GraphicsInfo.Software ? 2 :*/ 0
                 strokeColor: Universal.background
             }
         }
@@ -203,7 +203,7 @@ Slider {
             radius: height / 2
             color: control.sliderType === SceneSlider.RGBType ? Qt.hsva(control.position, 1, 1, 1)
                                                               : control.valueToHandleColor(control.value)
-            border.width: GraphicsInfo.api === GraphicsInfo.Software ? 2 : 0
+            border.width: /*GraphicsInfo.api === GraphicsInfo.Software ? 2 :*/ 0
             border.color: Universal.background
         }
 

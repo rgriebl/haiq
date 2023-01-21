@@ -107,7 +107,7 @@ Control {
             onTriggered: mapsModel.reload()
         }
 
-        headerPositioning: ListView.PullBackHeader
+        //headerPositioning: ListView.PullBackHeader
         header: Item {
             width: ListView.view.width
             height: normalHeader.font.pixelSize * 1.5

@@ -77,7 +77,7 @@ Control {
             }
         }
 
-        headerPositioning: ListView.PullBackHeader
+        //headerPositioning: ListView.PullBackHeader
         header: Item {
             width: ListView.view.width
             height: startEndHeader.font.pixelSize * 1.5
