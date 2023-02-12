@@ -58,6 +58,8 @@ Rectangle {
     signal closeRequested(int index)
     signal drawerRequested
 
+    property QtObject profile
+
     property int freezeDelay
     property int discardDelay
 
@@ -77,6 +79,7 @@ Rectangle {
             readonly property int index : ObjectModel.index
             anchors.fill: parent
             visible: index == root.currentIndex
+            profile: root.profile
             freezeDelay: root.freezeDelay
             discardDelay: root.discardDelay
             onCloseRequested: root.closeRequested(index)

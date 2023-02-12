@@ -14,6 +14,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtWebEngine
 import org.griebl.xbrowsersync 1.0
 
 Page {
@@ -41,6 +42,18 @@ Page {
         z: 0
         anchors.fill: parent
 
+        profile: WebEngineProfile {
+            storageName: "profile"
+            offTheRecord: false
+            persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
+
+
+        }
+        Component.onCompleted: {
+            console.log("cache", profile.cachePath, profile.persistentStoragePath)
+            console.log("cookies", profile.persistentCookiesPolicy)
+        }
+
         currentIndex: tabBar.currentIndex
         freezeDelay: 60
         discardDelay: 60*60
@@ -56,7 +69,9 @@ Page {
         id: drawer
 
         edge: Qt.RightEdge
-        interactive: false
+        interactive: true
+        dragMargin: 0
+        modal: true
         height: root.height
         width: 2 * root.width / 3
 
@@ -70,19 +85,16 @@ Page {
 
                 id: bookmarksHeader
                 text: "Bookmarks"
-                icon.name: { drawer.bookmarksStack, (drawer.bookmarksStack.length === 0) ? "mdi/close" : "mdi/arrow-left" }
+                icon.name: { (drawer.bookmarksStack.length === 0) ? "mdi/close" : "mdi/arrow-left" }
 
                 font.capitalization: Font.SmallCaps
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        if (drawer.bookmarksStack.length === 0) {
-                            drawer.close()
-                        } else {
-                            bookmarksList.model = drawer.bookmarksStack.pop()
-                            drawer.bookmarksStack = drawer.bookmarksStack
-                        }
+                onClicked: {
+                    if (drawer.bookmarksStack.length === 0) {
+                        drawer.close()
+                    } else {
+                        bookmarksList.model = drawer.bookmarksStack.pop()
+                        drawer.bookmarksStack = drawer.bookmarksStack
                     }
                 }
             }
@@ -92,25 +104,46 @@ Page {
 
                 ListView {
                     id: bookmarksList
+                    clip: true
                     model: XBrowserSync.bookmarks
-                    delegate: ItemDelegate {
-                        //required property var modelData
+                    delegate: Control {
+                        id: bookmarkDelegate
 
-                        text: modelData.title ? modelData.title.replace(/^\[xbs\] /, "") : "???"
-                        width: ListView.view.width
+                        property var data: modelData
+                        property var url: modelData.url
+                        property string title: modelData.title ? modelData.title.replace(/^\[xbs\] /, "") : modelData.url
 
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                if (modelData.children) {
-                                    drawer.bookmarksStack.push(bookmarksList.model)
-                                    drawer.bookmarksStack = drawer.bookmarksStack
-                                    bookmarksList.model = modelData.children
-                                } else {
-                                    tabStack.currentTab.url = modelData.url
-                                    drawer.close()
-                                }
+                        function activate() {
+                            if (modelData.children) {
+                                drawer.bookmarksStack.push(bookmarksList.model)
+                                drawer.bookmarksStack = drawer.bookmarksStack
+                                bookmarksList.model = modelData.children
+                            } else {
+                                tabStack.currentTab.url = modelData.url
+                                drawer.close()
                             }
+
+                        }
+
+                        width: ListView.view.width
+                        contentItem: ItemDelegate {
+                            Layout.fillWidth: true
+
+                            property bool isFolder: bookmarkDelegate.data.children ? true : false
+
+                            text: bookmarkDelegate.title
+                            // drawer.opened forces a reload of the icons
+                            icon.source: isFolder ? ""
+                                                  : bookmarkDelegate.url && drawer.opened
+                                                    ? "image://favicon/" + bookmarkDelegate.url
+                                                    : ""
+                            icon.name: isFolder ? "mdi/arrow-right" : ""
+                            icon.color: isFolder ? "white" : "transparent"
+                            icon.cache: isFolder
+                            icon.height: font.pixelSize * 1.5
+                            icon.width: font.pixelSize * 1.5
+
+                            onClicked: bookmarkDelegate.activate()
                         }
                     }
                 }

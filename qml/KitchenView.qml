@@ -107,6 +107,7 @@ TabletView {
         id: inputPanel
         y: root.height
         x: 0
+        z: 9000
         width: root.width
         externalLanguageSwitchEnabled: true
         onExternalLanguageSwitch: {

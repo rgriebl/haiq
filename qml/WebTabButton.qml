@@ -50,7 +50,6 @@
 
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtWebEngine
 
@@ -95,11 +94,11 @@ TabButton {
             color: {
                 switch (root.tab.lifecycleState) {
                 case WebEngineView.LifecycleState.Active:
-                    return Material.color(Material.Grey, Material.Shade100)
+                    return "grey" // Material.color(Material.Grey, Material.Shade100)
                 case WebEngineView.LifecycleState.Frozen:
-                    return Material.color(Material.Blue, Material.Shade400)
+                    return "blue" // Material.color(Material.Blue, Material.Shade400)
                 case WebEngineView.LifecycleState.Discarded:
-                    return Material.color(Material.Red, Material.Shade400)
+                    return "red" //Material.color(Material.Red, Material.Shade400)
                 }
             }
 
@@ -148,7 +147,7 @@ TabButton {
                         return root.tab.discardAction.text
                     }
                 }
-                color: Material.hintTextColor
+               // color: Material.hintTextColor
             }
             font.pointSize: 8
             verticalPadding: 9

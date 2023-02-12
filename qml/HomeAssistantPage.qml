@@ -23,5 +23,11 @@ Page {
         anchors.fill: parent
         zoomFactor: 2
         url: "http://marvin.home:8123"
+
+        profile: WebEngineProfile {
+            storageName: "ha-profile"
+            offTheRecord: false
+            persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
+        }
     }
 }

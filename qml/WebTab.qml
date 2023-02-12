@@ -51,7 +51,6 @@
 import QtQml
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtWebEngine
 
@@ -63,6 +62,8 @@ ColumnLayout {
 
     property int freezeDelay
     property int discardDelay
+
+    property alias profile: view.profile
 
     property alias icon : view.icon
     property alias loading : view.loading
@@ -139,8 +140,6 @@ ColumnLayout {
 
     ToolBar {
         Layout.fillWidth: true
-        Material.elevation: 0
-        Material.background: Material.color(Material.Grey, Material.Shade800)
 
         RowLayout {
             anchors.fill: parent
@@ -182,11 +181,15 @@ ColumnLayout {
                 onAccepted: {
                     let u = text
                     if (!u.startsWith("https://") && !u.startsWith("http://")) {
-                        if (u.indexOf(' ') >= 0 || u.indexOf('.' < 0)) {
+                        console.log(u.indexOf(' ') >= 0, u.indexOf('.') < 0)
+                        if (u.indexOf(' ') >= 0 || u.indexOf('.') < 0) {
                             u = "https://google.de/search?q=" + encodeURIComponent(u)
+                        } else if (u.match(/^\d+\.\d+\.\d+\.\d+\.*$/)) {
+                            u = "http://" + u
                         } else {
                             u = "https://" + u
                         }
+                        console.log(u)
                     }
                     view.url = u
                 }

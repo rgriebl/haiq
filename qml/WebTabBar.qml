@@ -50,7 +50,6 @@
 
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 Pane {
@@ -62,8 +61,8 @@ Pane {
 
     signal closeRequested(int index)
 
-    Material.background: Material.color(Material.Grey, Material.Shade900)
-    Material.elevation: 4
+    //Material.background: Material.color(Material.Grey, Material.Shade900)
+    //Material.elevation: 4
     padding: 0
 
     RowLayout {
