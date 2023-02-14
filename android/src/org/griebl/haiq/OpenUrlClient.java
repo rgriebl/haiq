@@ -1,6 +1,6 @@
 package org.griebl.haiq;
 
-import org.qtproject.qt5.android.bindings.QtActivity;
+import org.qtproject.qt.android.bindings.QtActivity;
 import android.os.*;
 import android.content.*;
 import android.app.*;
