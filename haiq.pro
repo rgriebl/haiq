@@ -138,15 +138,6 @@ win32 {
   QMAKE_TARGET_COMPANY     = "https://$$GITHUB_URL"
   QMAKE_TARGET_DESCRIPTION = "$$DESCRIPTION"
 
-  win32-msvc* {
-#    QMAKE_CXXFLAGS_DEBUG   += /Od /GL-
-#    QMAKE_CXXFLAGS_RELEASE += /O2 /GL
-#    release:QMAKE_LFLAGS_WINDOWS += "/LTCG"
-#    DEFINES += _CRT_SECURE_NO_DEPRECATE
-
-##    LIBS += user32.lib advapi32.lib wininet.lib
-  }
-
   build_pass:CONFIG(release, debug|release) {
     ISCC="iscc.exe"
     !system(where /Q $$ISCC) {
@@ -158,41 +149,8 @@ win32 {
       ISCC="$$INNO_PATH\\$$ISCC"
     }
 
-    !isEmpty(VCPKG_PATH):OPENSSL_PATHS *= $$VCPKG_PATH/bin
-
-    contains(QMAKE_TARGET.arch, x86_64) {
-      OPENSSL_PATHS *= "$$getenv(ProgramFiles)/OpenSSL-Win64/bin"
-      OPENSSL_PATHS *= "$$getenv(ProgramFiles)/OpenSSL/bin"
-
-      OPENSSL_SSL_LIB="libssl-1_1-x64.dll"
-      OPENSSL_CRYPTO_LIB="libcrypto-1_1-x64.dll"
-    } else {
-      OPENSSL_PATHS *= "$$getenv(ProgramFiles)/OpenSSL-Win32/bin"
-      OPENSSL_PATHS *= "$$getenv(ProgramFiles(x86))/OpenSSL/bin"
-
-      OPENSSL_SSL_LIB="libssl-1_1.dll"
-      OPENSSL_CRYPTO_LIB="libcrypto-1_1.dll"
-    }
-
-    OPENSSL_PATH=""
-    for (osslp, OPENSSL_PATHS) {
-      exists("$$osslp/$$OPENSSL_SSL_LIB"):isEmpty(OPENSSL_PATH):OPENSSL_PATH=$$osslp
-    }
-    isEmpty(OPENSSL_PATH) {
-      error("Please install OpenSSL via VCPKG or from https://slproweb.com/products/Win32OpenSSL.html.")
-    } else {
-      OPENSSL_PATH=$$clean_path($$OPENSSL_PATH)
-      message("Found OpenSSL at $$OPENSSL_PATH")
-    }
-
-    # The OpenSSL libs from the Qt installer require an ancient MSVC2010 C runtimes, but the
-    # installer doesn't install them by default, plus there's no package for the x86 version anyway.
-    # The build from slwebpro.com on the other hand are built against a recent v14 runtime, which
-    # we are installing anyway.
     deploy.depends += $(DESTDIR_TARGET)
     deploy.commands += $$shell_path($$[QT_HOST_BINS]/windeployqt.exe) --qmldir $$SOURCE_DIR/qml --no-virtualkeyboard --no-translations --no-webchannel --no-webenginecore --no-webengine --no-serialport --no-positioning $(DESTDIR_TARGET)
-    deploy.commands += & $$QMAKE_COPY $$shell_quote($$shell_path($$OPENSSL_PATH/$$OPENSSL_SSL_LIB)) $(DESTDIR)
-    deploy.commands += & $$QMAKE_COPY $$shell_quote($$shell_path($$OPENSSL_PATH/$$OPENSSL_CRYPTO_LIB)) $(DESTDIR)
 
     installer.depends += deploy
     installer.commands += $$shell_quote($$shell_path($$ISCC)) \
@@ -213,8 +171,6 @@ win32 {
 #
 
 macos {
-#  LIBS += -framework SystemConfiguration
-
   QMAKE_FULL_VERSION = $$VERSION
   QMAKE_INFO_PLIST = macos/Info.plist
   bundle_icons.path = Contents/Resources
