@@ -11,6 +11,7 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
+import QtQml
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -18,13 +19,6 @@ import QtQuick.Layouts
 
 Control {
     id: root
-    Timer {
-        // Tumbler is doing weird things while resizing within the Layouts
-        id: _tumblerCurrentIndexBug
-        running: true
-        interval: 500
-        onTriggered: resetTimer()
-    }
 
     property alias hours: hoursTumbler.currentIndex
     property alias minutes: minutesTumbler.currentIndex
@@ -34,6 +28,8 @@ Control {
     property bool timerPaused: false
     property int timerInterval: 1000 * (seconds + 60 * (minutes + 60 * hours))
     property int timerRemaining
+
+    Component.onCompleted: resetTimer()
 
     function resetTimer() {
         if (!timerActive)
@@ -140,10 +136,10 @@ Control {
                     id: hoursTumbler
                     Layout.fillHeight: true
                     Layout.preferredWidth: implicitWidth * 2.5
-                    visibleItemCount: 7
+                    visibleItemCount: 9
                     model: 24
                     delegate: delegateComponent
-                    wrap: false
+                    wrap: true
 
                     Tracer { }
                 }
@@ -157,10 +153,10 @@ Control {
                     id: minutesTumbler
                     Layout.fillHeight: true
                     Layout.preferredWidth: implicitWidth * 2.5
-                    visibleItemCount: 7
+                    visibleItemCount: 9
                     model: 60
                     delegate: delegateComponent
-                    wrap: false
+                    wrap: true
 
                     Tracer { }
                 }
@@ -174,10 +170,10 @@ Control {
                     id: secondsTumbler
                     Layout.fillHeight: true
                     Layout.preferredWidth: implicitWidth * 2
-                    visibleItemCount: 7
+                    visibleItemCount: 9
                     model: 60
                     delegate: delegateComponent
-                    wrap: false
+                    wrap: true
 
                     Tracer { }
                 }

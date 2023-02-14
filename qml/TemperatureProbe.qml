@@ -31,6 +31,7 @@ Control {
         temperature: 0
         highTemperature: 100
         opacity: temperature === 0 ? 0 : 1
+        font: root.font
 
         Component.onCompleted: {
             HomeAssistant.subscribe(entity, function(state, attributes) {
