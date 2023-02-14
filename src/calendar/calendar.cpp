@@ -281,11 +281,7 @@ void Calendar::handleNetworkReply(QNetworkReply *reply)
     } else {
         m_lastETag = etag;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        auto future = QtConcurrent::run(this, &Calendar::parseNetworkReply, reply->readAll());
-#else
         auto future = QtConcurrent::run(&Calendar::parseNetworkReply, this, reply->readAll());
-#endif
         m_parserWatcher.setFuture(future);
         reply->deleteLater();
 

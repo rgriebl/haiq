@@ -18,9 +18,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#  include <private/qvariant_p.h> // for v_cast
-#endif
 
 #include "exception.h"
 #include "configuration.h"
@@ -44,15 +41,12 @@ QVariant Configuration::operator[](const char *key) const
     return m_map.value(QString::fromLatin1(key));
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
 // Qt6 removed v_cast, but the "replacement" QVariant::Private::get is const only
 template <typename T> T *v_cast(QVariant::Private *vp)
 {
     return static_cast<T *>(const_cast<void *>(vp->storage()));
 }
 
-#endif
 
 // based on the version in QtApplicationManager, author yours truly
 void Configuration::recursiveMergeVariantMap(QVariantMap &into, const QVariantMap &from)
