@@ -73,7 +73,7 @@ signals:
     void enabledChanged(bool enabled);
     void repeatChanged(bool repeat);
     void timeChanged(int time);
-    void dayOfWeekChanged(const QVariantList &dayOfWeek);
+    void dayOfWeekChanged();
     void volumeChanged(qreal volume);
     void urlChanged(const QUrl &url);
 
@@ -130,7 +130,7 @@ signals:
     void alarmsChanged();
     void nextAlarmChanged(const QDateTime &nextAlarm);
     void alarmActiveChanged(bool alarmActive);
-    bool snoozingChanged(bool snoozing);
+    void snoozingChanged(bool snoozing);
 
     void alarmAdded(SqueezeBoxAlarm *alarm);
     void alarmRemoved(SqueezeBoxAlarm *alarm);
@@ -178,11 +178,11 @@ public:
 
     void setThisPlayerAlarmState(const QString &newState); // Android only
 
-    void command(const QVariantList &args, std::function<void(const QStringList &)> callback);
+    void command(const QVariantList &args, const std::function<void (const QStringList &)> &callback);
 
     static QPair<StringMap, QVector<StringMap>> parseExtendedResult(const QStringList &result, const QString &separatorTag);
 
-    QList<QObject *> players();
+    QList<QObject *> players() const;
     QObject *thisPlayer();
 
     bool connected() const;
@@ -192,7 +192,7 @@ signals:
     void receivedNotification(const QStringList &args);
 
     void playersChanged();
-    void thisPlayerChanged(SqueezeBoxPlayer *player);
+    void thisPlayerChanged();
     void playerAdded(SqueezeBoxPlayer *player);
     void playerRemoved(SqueezeBoxPlayer *player);
 

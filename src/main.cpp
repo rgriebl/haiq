@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
             qDebug("USING SOFTWARE RENDERING");
         }
         if (strcmp(argv[i], "--verbose") == 0) {
-            QLoggingCategory::setFilterRules("*=true");
+            QLoggingCategory::setFilterRules(u"*=true"_qs);
             qDebug("VERBOSE");
         }
     }
@@ -135,10 +135,10 @@ int main(int argc, char *argv[])
     qputenv("QT_VIRTUALKEYBOARD_DESKTOP_DISABLE", "1");
 #endif
 
-    QCoreApplication::setApplicationName(HAIQ_NAME);
-    QCoreApplication::setApplicationVersion(HAIQ_VERSION);
-    QCoreApplication::setOrganizationName(HAIQ_NAME);
-    QCoreApplication::setOrganizationDomain("haiq.griebl.org");
+    QCoreApplication::setApplicationName(QLatin1String(HAIQ_NAME));
+    QCoreApplication::setApplicationVersion(QLatin1String(HAIQ_VERSION));
+    QCoreApplication::setOrganizationName(QLatin1String(HAIQ_NAME));
+    QCoreApplication::setOrganizationDomain(u"haiq.griebl.org"_qs);
     QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents);
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // for webengine
 #if defined(HAIQ_USE_WEBENGINE)
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 
         qDebug() << "Received an event from another instance: window="
                  << static_cast<void*>(window) << "; msg=" << msg;
-        if ((msg == "show") && window) {
+        if ((msg == u"show") && window) {
             if (window->isVisible()) {
                 window->close();
             } else {
@@ -172,63 +172,63 @@ int main(int argc, char *argv[])
         }
     });
 
-    QString basePath = HAIQ_BASE_PATH;
-    if (!basePath.endsWith('/'))
-        basePath.append('/');
-    if (basePath.startsWith("qrc:/"))
+    QString basePath = QLatin1String(HAIQ_BASE_PATH);
+    if (!basePath.endsWith(u'/'))
+        basePath.append(u'/');
+    if (basePath.startsWith(u"qrc:/"))
         basePath.remove(0, 3);
-    QString qmlPath = basePath + "qml/";
+    QString qmlPath = basePath + u"qml/"_qs;
 
     QSettings settings;
 
 
     QCommandLineParser clp;
     clp.addHelpOption();
-    clp.addOption({ "config-file", "Local config file.", "file" });
-    clp.addOption({ "config-host", "Config download hostname or IP.", "hostname" });
-    clp.addOption({ "config-token", "Config download unique token.", "token" });
-    clp.addOption({ "variant", "Variant identifier in config file.", "variant" });
-    clp.addOption({ "software-gl", "Use the QML software renderer." });
-    clp.addOption({ "verbose", "Full debug output." });
-    clp.addOption({ "fullscreen", "Show the main window in full-screen mode." });
-    clp.addOption({ "show-tracer", "Show QML tracers." });
-    clp.addOption({ "rotation", "Rotate the window.", "degrees" });
-    clp.addOption({ "new-instance", "Don't just show the window of an already running instance, but always start a new one." });
-    clp.addOption({ "brightness-control", "Enable screen brightness control.", "options" });
+    clp.addOption({ u"config-file"_qs, u"Local config file."_qs, u"file"_qs });
+    clp.addOption({ u"config-host"_qs, u"Config download hostname or IP."_qs, u"hostname"_qs });
+    clp.addOption({ u"config-token"_qs, u"Config download unique token."_qs, u"token"_qs });
+    clp.addOption({ u"variant"_qs, u"Variant identifier in config file."_qs, u"variant"_qs });
+    clp.addOption({ u"software-gl"_qs, u"Use the QML software renderer."_qs });
+    clp.addOption({ u"verbose"_qs, u"Full debug output."_qs });
+    clp.addOption({ u"fullscreen"_qs, u"Show the main window in full-screen mode."_qs });
+    clp.addOption({ u"show-tracer"_qs, u"Show QML tracers."_qs });
+    clp.addOption({ u"rotation"_qs, u"Rotate the window."_qs, u"degrees"_qs });
+    clp.addOption({ u"new-instance"_qs, u"Don't just show the window of an already running instance, but always start a new one."_qs });
+    clp.addOption({ u"brightness-control"_qs, u"Enable screen brightness control."_qs, u"options"_qs });
 
     if (!clp.parse(QCoreApplication::arguments())) {
         showParserMessage(clp.errorText() + "\n", ErrorMessage);
         return 1;
     }
-    if (clp.isSet("help"))
+    if (clp.isSet(u"help"_qs))
         clp.showHelp();
 
     // trigger existing instance and quit if there is one
-    if (anotherInstanceAvailable && !clp.isSet("new-instance")) {
+    if (anotherInstanceAvailable && !clp.isSet(u"new-instance"_qs)) {
         qDebug() << "Activating other instance";
-        return app.sendMessage("show") ? 0 : 3;
+        return app.sendMessage(u"show"_qs) ? 0 : 3;
     }
 
-    QString configHost = clp.value("config-host");
+    QString configHost = clp.value(u"config-host"_qs);
     if (configHost.isEmpty())
         configHost = qEnvironmentVariable("HAIQ_CONFIG_HOST");
     if (configHost.isEmpty())
         configHost = settings.value("Settings/ConfigHost").toString();
     if (configHost.isEmpty())
-        configHost = "haiq-config";
+        configHost = u"haiq-config"_qs;
 
-    QString configToken = clp.value("config-token");
+    QString configToken = clp.value(u"config-token"_qs);
     if (configToken.isEmpty())
         configToken = qEnvironmentVariable("HAIQ_CONFIG_TOKEN");
     if (configToken.isEmpty())
         configToken = settings.value("Settings/ConfigToken").toString();
 
-    QString configFile = clp.value("config-file");
+    QString configFile = clp.value(u"config-file"_qs);
 
     if (configFile.isEmpty()) {
         QDir cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-        cacheDir.mkpath(".");
-        configFile = cacheDir.absoluteFilePath("config.json");
+        cacheDir.mkpath(u"."_qs);
+        configFile = cacheDir.absoluteFilePath(u"config.json"_qs);
 
         if (!configHost.isEmpty() && !configToken.isEmpty()) {
             QSaveFile scf(configFile);
@@ -251,14 +251,14 @@ int main(int argc, char *argv[])
         }
     }
 
-    QString variant = clp.value("variant");
+    QString variant = clp.value(u"variant"_qs);
     if (variant.isEmpty())
         variant = qEnvironmentVariable("HAIQ_VARIANT");
     if (variant.isEmpty())
         variant = settings.value("Settings/Variant").toString();
 
     bool needSetup = variant.isEmpty()
-            || (!clp.isSet("config-file") && (configHost.isEmpty() || configToken.isEmpty()));
+            || (!clp.isSet(u"config-file"_qs) && (configHost.isEmpty() || configToken.isEmpty()));
 
     Configuration config(configFile, variant);
     try {
@@ -281,35 +281,35 @@ int main(int argc, char *argv[])
     QQmlFileSelector *selector = new QQmlFileSelector(&engine);
     selector->setExtraSelectors({ variant });
 
-    int rotation = clp.value("rotation").toInt();
+    int rotation = clp.value(u"rotation"_qs).toInt();
     QString qmlFile;
 
     if (needSetup) {
-        qmlFile= "Setup.qml";
+        qmlFile= u"Setup.qml"_qs;
 
         auto pfn = qApp->platformName();
-        QQuickStyle::setStyle((pfn == "windows" || pfn == "cocoa" || pfn == "xcb" || pfn == "wayland")
-                              ? "fusion" : "material");
+        QQuickStyle::setStyle((pfn == u"windows" || pfn == u"cocoa" || pfn == u"xcb" || pfn == u"wayland")
+                              ? u"fusion"_qs : u"material"_qs);
 
         auto setup = new QQmlPropertyMap(&engine);
-        setup->insert("possibleVariants", config.possibleVariants());
-        setup->insert("selectedVariant", variant);
-        setup->insert("configHostname", configHost);
-        setup->insert("configToken", configToken);
-        engine.rootContext()->setContextProperty("SetupProperties", setup);
+        setup->insert(u"possibleVariants"_qs, config.possibleVariants());
+        setup->insert(u"selectedVariant"_qs, variant);
+        setup->insert(u"configHostname"_qs, configHost);
+        setup->insert(u"configToken"_qs, configToken);
+        engine.rootContext()->setContextProperty(u"SetupProperties"_qs, setup);
 
         QObject::connect(setup, &QQmlPropertyMap::valueChanged,
                          &engine, [&settings](const QString &key, const QVariant &value) {
-            if (key == "selectedVariant")
-                settings.setValue("/Settings/Variant", value.toString());
-            else if (key == "configHostname")
-                settings.setValue("/Settings/ConfigHostname", value.toString());
-            else if (key == "configToken")
-                settings.setValue("/Settings/ConfigToken", value.toString());
+            if (key == u"selectedVariant")
+                settings.setValue(u"/Settings/Variant"_qs, value.toString());
+            else if (key == u"configHostname")
+                settings.setValue(u"/Settings/ConfigHostname"_qs, value.toString());
+            else if (key == u"configToken")
+                settings.setValue(u"/Settings/ConfigToken"_qs, value.toString());
             settings.sync();
         });
     } else {
-        if (!clp.isSet("rotation"))
+        if (!clp.isSet(u"rotation"_qs))
             rotation = config["rotation"].toInt();
 
         qmlFile = config["view"].toString();
@@ -339,17 +339,17 @@ int main(int argc, char *argv[])
         /////////////////////////////////
 
         ScreenBrightness::registerQmlTypes();
-        ScreenBrightness::createInstance(clp.value("brightness-control"));
+        ScreenBrightness::createInstance(clp.value(u"brightness-control"_qs));
 
         /////////////////////////////////
 
         const auto homeAssistant = config["homeAssistant"].toMap();
-        const QUrl haUrl = QUrl::fromUserInput(homeAssistant["url"].toString());
-        if (!haUrl.isEmpty() && !haUrl.scheme().startsWith("http")) {
+        const QUrl haUrl = QUrl::fromUserInput(homeAssistant[u"url"_qs].toString());
+        if (!haUrl.isEmpty() && !haUrl.scheme().startsWith(u"http")) {
             showParserMessage("Invalid Home-Assistant server URL: " + haUrl.toString() + "\n", ErrorMessage);
             return 2;
         }
-        const QString haAuthToken = homeAssistant["accessToken"].toString();
+        const QString haAuthToken = homeAssistant[u"accessToken"_qs].toString();
 
         HomeAssistant::registerQmlTypes();
         HomeAssistant::createInstance(haUrl, haAuthToken);
@@ -357,9 +357,9 @@ int main(int argc, char *argv[])
         /////////////////////////////////
 
         const auto squeezeboxServer = config["squeezeboxServer"].toMap();
-        QUrl squeezeBoxServerUrl = QUrl::fromUserInput(squeezeboxServer["url"].toString());
-        QStringList sbPlayerNames = squeezeboxServer["players"].toStringList();
-        auto sbThisPlayerName = squeezeboxServer["thisPlayer"].toString();
+        QUrl squeezeBoxServerUrl = QUrl::fromUserInput(squeezeboxServer[u"url"_qs].toString());
+        QStringList sbPlayerNames = squeezeboxServer[u"players"_qs].toStringList();
+        auto sbThisPlayerName = squeezeboxServer[u"thisPlayer"_qs].toString();
 
         SqueezeBoxServer::registerQmlTypes();
         SqueezeBoxServer::createInstance(squeezeBoxServerUrl.host(), squeezeBoxServerUrl.port());
@@ -371,9 +371,9 @@ int main(int argc, char *argv[])
         /////////////////////////////////
 
         const auto xbSync= config["xBrowserSync"].toMap();
-        QUrl xbSyncUrl = QUrl::fromUserInput(xbSync["url"].toString());
-        auto xbSyncId = xbSync["syncId"].toString();
-        auto xbSyncPassword = xbSync["password"].toString();
+        QUrl xbSyncUrl = QUrl::fromUserInput(xbSync[u"url"_qs].toString());
+        auto xbSyncId = xbSync[u"syncId"_qs].toString();
+        auto xbSyncPassword = xbSync[u"password"_qs].toString();
 
         XBrowserSync::registerQmlTypes();
         XBrowserSync::createInstance(xbSyncUrl, xbSyncId, xbSyncPassword);
@@ -392,31 +392,31 @@ int main(int argc, char *argv[])
         /////////////////////////////////
 
         const auto calendar = config["calendar"].toMap();
-        QUrl calUrl = QUrl::fromUserInput(calendar["url"].toString());
-        calUrl.setUserName(calendar["username"].toString());
-        calUrl.setPassword(calendar["password"].toString());
+        QUrl calUrl = QUrl::fromUserInput(calendar[u"url"_qs].toString());
+        calUrl.setUserName(calendar[u"username"_qs].toString());
+        calUrl.setPassword(calendar[u"password"_qs].toString());
 
         UpcomingCalendarEntries::registerQmlTypes();
         Calendar *cal = new Calendar(calUrl, qApp);
-        engine.rootContext()->setContextProperty("MainCalendar", cal); //TODO: get rid of context property
+        engine.rootContext()->setContextProperty(u"MainCalendar"_qs, cal); //TODO: get rid of context property
 
         /////////////////////////////////
 
-        engine.rootContext()->setContextProperty("Config", config["qml"].toMap());
+        engine.rootContext()->setContextProperty(u"Config"_qs, config["qml"].toMap());
     }
 
-    QUrl baseUrl = basePath.startsWith(":/") ? "qrc" + basePath
-                                             : "file:///" + basePath;
+    QUrl baseUrl = basePath.startsWith(u":/") ? u"qrc"_qs + basePath
+                                              : u"file:///"_qs + basePath;
 
-    QIcon::setThemeName("dummy");
-    QIcon::setFallbackSearchPaths({ basePath + "icons/" });
+    QIcon::setThemeName(u"dummy"_qs);
+    QIcon::setFallbackSearchPaths({ basePath + u"icons/"_qs });
 
-    engine.rootContext()->setContextProperty("showTracer", clp.isSet("show-tracer"));
+    engine.rootContext()->setContextProperty(u"showTracer"_qs, clp.isSet(u"show-tracer"_qs));
 
     engine.setBaseUrl(baseUrl);
-    engine.load(QUrl("qml/" + qmlFile));
+    engine.load(QUrl(u"qml/"_qs + qmlFile));
 
-    bool isFullscreen = clp.isSet("fullscreen");
+    bool isFullscreen = clp.isSet(u"fullscreen"_qs);
 #if defined(Q_OS_ANDROID)
     isFullscreen = true;
 #endif
@@ -433,10 +433,10 @@ int main(int argc, char *argv[])
 
 #if defined(Q_OS_LINUX)
             // get rid of the annoying messages while the monitor is in standby
-            if (qApp->platformName() == "eglfs") {
+            if (qApp->platformName() == u"eglfs") {
                 static QtMessageHandler oldHandler = nullptr;
                 oldHandler = qInstallMessageHandler([](QtMsgType type, const QMessageLogContext &context, const QString &msg) {
-                    if (!msg.startsWith("Could not queue DRM page flip on screen"))
+                    if (!msg.startsWith(u"Could not queue DRM page flip on screen"))
                         oldHandler(type, context, msg);
                 });
             }

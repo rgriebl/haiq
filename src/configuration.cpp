@@ -18,7 +18,9 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
-#include <private/qvariant_p.h> // for v_cast
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#  include <private/qvariant_p.h> // for v_cast
+#endif
 
 #include "exception.h"
 #include "configuration.h"
@@ -39,7 +41,7 @@ const QStringList &Configuration::possibleVariants() const
 
 QVariant Configuration::operator[](const char *key) const
 {
-    return m_map.value(key);
+    return m_map.value(QString::fromLatin1(key));
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -62,14 +64,14 @@ void Configuration::recursiveMergeVariantMap(QVariantMap &into, const QVariantMa
             QVariant fromValue = it.value();
             QVariant &toValue = (*into)[it.key()];
 
-            bool needsMerge = (toValue.type() == fromValue.type());
+            bool needsMerge = (toValue.typeId() == fromValue.typeId());
 
             // we're trying not to detach, so we're using v_cast to avoid copies
-            if (needsMerge && (toValue.type() == QVariant::Map))
+            if (needsMerge && (toValue.typeId() == QMetaType::QVariantMap))
                 recursiveMergeMap(v_cast<QVariantMap>(&toValue.data_ptr()), fromValue.toMap());
-            else if (needsMerge && (toValue.type() == QVariant::List))
+            else if (needsMerge && (toValue.typeId() == QMetaType::QVariantList))
                 into->insert(it.key(), toValue.toList() + fromValue.toList());
-            else if (int(fromValue.type()) == QMetaType::Nullptr)
+            else if (int(fromValue.typeId()) == QMetaType::Nullptr)
                 into->remove(it.key());
             else
                 into->insert(it.key(), fromValue);
@@ -93,9 +95,9 @@ void Configuration::parse()
         QByteArray data = f.readAll();
         const QJsonDocument json = QJsonDocument::fromJson(data, &parseError);
         if (json.isNull()) {
-            int line = data.left(parseError.offset).count('\n') + 1;
-            int lpos = data.lastIndexOf('\n', parseError.offset);
-            int rpos = data.indexOf('\n', parseError.offset);
+            auto line = data.left(parseError.offset).count('\n') + 1;
+            auto lpos = data.lastIndexOf('\n', parseError.offset);
+            auto rpos = data.indexOf('\n', parseError.offset);
 
             if (rpos >= 1 && data.at(rpos - 1) == '\r')
                 --rpos;
@@ -114,7 +116,7 @@ void Configuration::parse()
         throw Exception("Cannot parse \"%1\": not an array").arg(m_configFile);
 
     const auto array = configJson.array();
-    for (const auto &value : array) {
+    for (const auto value : array) {
         if (!value.isObject())
             continue;
         const auto object = value.toObject();
@@ -123,8 +125,8 @@ void Configuration::parse()
         auto key = object.constBegin().key();
 
         if (m_variant.isEmpty()) {
-            if (key.contains("|"))
-                m_possibleVariants.append(key.split("|"));
+            if (key.contains(u'|'))
+                m_possibleVariants.append(key.split(u'|'));
             else if (!key.isEmpty())
                 m_possibleVariants.append(key);
 
@@ -133,7 +135,7 @@ void Configuration::parse()
 
         bool apply = key.isEmpty();
         if (!apply) {
-            const QStringList keyList = key.split("|");
+            const QStringList keyList = key.split(u'|');
 
             for (const auto &k : keyList) {
                 QRegularExpression keyRe { QRegularExpression::wildcardToRegularExpression(k) };
@@ -145,7 +147,7 @@ void Configuration::parse()
     }
     if (!m_possibleVariants.isEmpty()) {
         for (auto it = m_possibleVariants.begin(); it != m_possibleVariants.end(); ) {
-            if (it->isEmpty() || it->contains("*"))
+            if (it->isEmpty() || it->contains(u"*"))
                 it = m_possibleVariants.erase(it);
             else
                 ++it;

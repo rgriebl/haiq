@@ -17,7 +17,7 @@
 #include "exception.h"
 
 Exception::Exception(const char *errorString) Q_DECL_NOEXCEPT
-    : m_errorString(errorString ? QLatin1String(errorString) : QString())
+    : m_errorString(errorString ? QString::fromLatin1(errorString) : QString())
 { }
 
 Exception::Exception(const QString &errorString) Q_DECL_NOEXCEPT
@@ -25,11 +25,11 @@ Exception::Exception(const QString &errorString) Q_DECL_NOEXCEPT
 { }
 
 Exception::Exception(int _errno, const char *errorString) Q_DECL_NOEXCEPT
-    : m_errorString(QLatin1String(errorString) + QStringLiteral(": ") + QString::fromLocal8Bit(strerror(_errno)))
+    : m_errorString(QString::fromLatin1(errorString) + u": "_qs + QString::fromLocal8Bit(strerror(_errno)))
 { }
 
 Exception::Exception(const QFile &file, const char *errorString) Q_DECL_NOEXCEPT
-    : m_errorString(QLatin1String(errorString) + QStringLiteral(" (") + file.fileName() + QStringLiteral("): ") + file.errorString())
+    : m_errorString(QString::fromLatin1(errorString) + u" ("_qs + file.fileName() + u"): "_qs + file.errorString())
 { }
 
 Exception::Exception(const Exception &copy) Q_DECL_NOEXCEPT

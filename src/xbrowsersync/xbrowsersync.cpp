@@ -89,14 +89,14 @@ void XBrowserSync::sync()
 
     if (m_lastSync.isValid()) {
         QUrl url = m_syncUrl;
-        url.setPath(url.path() % QLatin1String("/bookmarks/") % m_syncId % QLatin1String("/lastUpdated"));
+        url.setPath(url.path() % u"/bookmarks/"_qs % m_syncId % u"/lastUpdated"_qs);
         auto reply = m_nam->get(QNetworkRequest(url));
 
         QObject::connect(reply, &QNetworkReply::finished, this, [this, reply]() {
             if (reply->error() == QNetworkReply::NoError) {
                 auto jsonReply = QJsonDocument::fromJson(reply->readAll());
                 if (!jsonReply.isNull()) {
-                    auto syncTime = QDateTime::fromString(jsonReply.object().value("lastUpdated").toString(),
+                    auto syncTime = QDateTime::fromString(jsonReply.object().value(u"lastUpdated"_qs).toString(),
                                                           Qt::ISODateWithMs);
 
                     if (syncTime > m_lastSync) {
@@ -125,7 +125,7 @@ void XBrowserSync::syncBookmarks()
         return;
 
     QUrl url = m_syncUrl;
-    url.setPath(url.path() % QLatin1String("/bookmarks/") % m_syncId);
+    url.setPath(url.path() % u"/bookmarks/"_qs % m_syncId);
 
     auto reply = m_nam->get(QNetworkRequest(url));
 
@@ -133,9 +133,9 @@ void XBrowserSync::syncBookmarks()
         if (reply->error() == QNetworkReply::NoError) {
             auto jsonReply = QJsonDocument::fromJson(reply->readAll());
             if (!jsonReply.isNull()) {
-                auto syncTime = QDateTime::fromString(jsonReply.object().value("lastUpdated").toString(),
+                auto syncTime = QDateTime::fromString(jsonReply.object().value(u"lastUpdated"_qs).toString(),
                                                       Qt::ISODateWithMs);
-                auto bookmarks = QByteArray::fromBase64(jsonReply.object().value("bookmarks").toString().toLatin1());
+                auto bookmarks = QByteArray::fromBase64(jsonReply.object().value(u"bookmarks"_qs).toString().toLatin1());
 
                 if (parseBookmarks(bookmarks))
                     m_lastSync = syncTime;
@@ -165,17 +165,19 @@ bool XBrowserSync::parseBookmarks(const QByteArray &encoded)
 
     aes_init_keygen_tables();
     gcm_context ctx;            // includes the AES context structure
-    int result = gcm_setkey(&ctx, (const uchar *) m_syncKey.constData(), m_syncKey.size());
+    int result = gcm_setkey(&ctx, reinterpret_cast<const uchar *>(m_syncKey.constData()),
+                            uint(m_syncKey.size()));
     if (result != 0) {
         qWarning() << "Failed to setup AES GCM";
         return false;
     }
 
     result = gcm_auth_decrypt(&ctx,
-                              (const uchar *) iv.constData(), iv.size(),
+                              reinterpret_cast<const uchar *>(iv.constData()), size_t(iv.size()),
                               nullptr, 0,
-                              (const uchar *) in.constData(), (uchar *) out.data(), in.size(),
-                              (const uchar *) tag.constData(), tag.size());
+                              reinterpret_cast<const uchar *>(in.constData()),
+                              reinterpret_cast<uchar *>(out.data()), size_t(in.size()),
+                              reinterpret_cast<const uchar *>(tag.constData()), size_t(tag.size()));
     if (result != 0) {
         qWarning() << "Failed to decrypt";
         return false;

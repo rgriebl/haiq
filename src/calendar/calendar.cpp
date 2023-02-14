@@ -58,7 +58,7 @@ Calendar::Calendar(const QUrl &url, QObject *parent)
 
 int Calendar::rowCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : m_entries.size();
+    return parent.isValid() ? 0 : int(m_entries.size());
 }
 
 QVariant Calendar::data(const QModelIndex &index, int role) const
@@ -119,7 +119,7 @@ QVariantMap Calendar::get(int row) const
     if (row >= 0 && row < rowCount()) {
         const auto roles = roleNames();
         for (auto it = roles.begin(); it != roles.end(); ++it)
-            map.insert(QLatin1String(it.value()), data(index(row), it.key()));
+            map.insert(QString::fromLatin1(it.value()), data(index(row), it.key()));
     }
     return map;
 }
@@ -161,9 +161,9 @@ QVector<Calendar::Entry> Calendar::parseNetworkReply(const QByteArray &data)
 
 
         for (const ICalendarParser::ContentLine &line : result) {
-            if (line.name == "BEGIN" && line.value == "VEVENT" && !parsingEntry) {
+            if (line.name == u"BEGIN" && line.value.toString() == u"VEVENT" && !parsingEntry) {
                 parsingEntry = true;
-            } else if (line.name == "END" && line.value == "VEVENT" && parsingEntry) {
+            } else if (line.name == u"END" && line.value.toString() == u"VEVENT" && parsingEntry) {
                 parsingEntry = false;
                 if (current.m_start.isValid()) {
                     QVector<QDateTime> startTimes = { current.m_start };
@@ -242,17 +242,17 @@ QVector<Calendar::Entry> Calendar::parseNetworkReply(const QByteArray &data)
                 recurrenceDates.clear();
                 recurrenceExceptionDates.clear();
             } else if (parsingEntry) {
-                if (line.name == "DTSTART") {
+                if (line.name == u"DTSTART") {
                     current.m_start = line.value.toDateTime();
-                } else if (line.name == "DTEND") {
+                } else if (line.name == u"DTEND") {
                     current.m_end = line.value.toDateTime();
-                } else if (line.name == "SUMMARY") {
+                } else if (line.name == u"SUMMARY") {
                     current.m_summary = line.value.toString();
-                } else if (line.name == "RRULE") {
+                } else if (line.name == u"RRULE") {
                     recurrenceRules = line.value.value<ICalendarRecurrence>();
-                } else if (line.name == "RDATA") {
+                } else if (line.name == u"RDATA") {
                     recurrenceDates.append(line.value.value<QList<QDateTime>>());
-                } else if (line.name == "EXDATA") {
+                } else if (line.name == u"EXDATA") {
                     recurrenceExceptionDates.append(line.value.value<QList<QDateTime>>());
                 }
             }
@@ -274,7 +274,6 @@ void Calendar::handleNetworkReply(QNetworkReply *reply)
         qWarning() << "Failed to retrieve calendar from" << reply->url() << ":" << reply->errorString();
     } else if ((etagValid && (etag == m_lastETag)) || (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 304)) {
         qDebug() << "ETAG matches on" << (reply->operation() == QNetworkAccessManager::HeadOperation ? "HEAD" : "GET") << "operation -> no changes";
-        ; // no changes
     } else if ((reply->operation() == QNetworkAccessManager::HeadOperation) && (etagValid && (etag != m_lastETag))) {
         qDebug() << "HEAD says we have new entries -> issue GET";
         m_nam->get(reply->request());

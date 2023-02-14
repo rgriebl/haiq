@@ -112,9 +112,9 @@ HomeAssistant::HomeAssistant(const QUrl &homeAssistantUrl,
     m_baseUrl.setPath(QString());
     m_baseUrl.setQuery(QUrlQuery());
 
-    if (m_webSocketUrl.scheme() == qL1S("http"))
+    if (m_webSocketUrl.scheme() == u"http")
         m_webSocketUrl.setScheme(qSL("ws"));
-    else if (m_webSocketUrl.scheme() == qL1S("https"))
+    else if (m_webSocketUrl.scheme() == u"https")
         m_webSocketUrl.setScheme(qSL("wss"));
 
 
@@ -268,7 +268,7 @@ bool HomeAssistant::callService(const QString &service, const QString &entity, c
 
 bool HomeAssistant::callService(const QString &service, const QStringList &entities, const QVariantMap &data)
 {
-    int pos = service.indexOf('.');
+    auto pos = service.indexOf(u'.');
 
     if (pos <= 0)
         return false;
@@ -357,7 +357,7 @@ bool HomeAssistant::handleEvent(const QString &eventType, const QDateTime &timeS
 {
     //qWarning() << "RECEIVED EVENT:" << eventType << timeStamp << data;
 
-    if (eventType == qL1S("state_changed")) {
+    if (eventType == u"state_changed") {
         return handleStateChanged(timeStamp,  data[qSL("entity_id")].toString(),
                 data[qSL("new_state")].toMap(),
                 data[qSL("old_state")].toMap());

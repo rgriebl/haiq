@@ -60,7 +60,7 @@ void ScreenBrightness::registerQmlTypes()
 ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
     : QObject(parent)
 {
-    if (options == "off" || options == "0" || options == "disable")
+    if (options == u"off" || options == u"0" || options == u"disable")
         return;
 #if !defined(Q_OS_LINUX)
     return;
@@ -71,15 +71,15 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
     QString ddcDevice;
     uint ddcVcp = 0x10; // luminance
 
-    QStringList optionList = options.split(':', Qt::SkipEmptyParts);
+    QStringList optionList = options.split(u':', Qt::SkipEmptyParts);
 
-    if (optionList.isEmpty() || optionList.constFirst() == "backlight") {
+    if (optionList.isEmpty() || optionList.constFirst() == u"backlight") {
         QString backlightPath(qSL("/sys/class/backlight/"));
 
         for (int i = 1; i < optionList.size(); ++i) {
             if (optionList.at(i).startsWith(backlightPath)) {
                 backlightDevice = optionList.at(1);
-            } else if (optionList.at(i) == "force-blank") {
+            } else if (optionList.at(i) == u"force-blank") {
                 forceBlank = true;
             }
         }
@@ -91,15 +91,15 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
         if (backlightDevice.isEmpty()) {
             qWarning() << "Brightness control via" << backlightPath << "was requested, but no suitable device is available";
         }
-    } else if (optionList.constFirst() == "ddc") {
+    } else if (optionList.constFirst() == u"ddc") {
         for (int i = 1; i < optionList.size(); ++i) {
-            if (optionList.at(i).startsWith("/dev/")) {
+            if (optionList.at(i).startsWith(u"/dev/")) {
                 ddcDevice = optionList.at(1);
-            } else if (optionList.at(i) == "force-blank") {
+            } else if (optionList.at(i) == u"force-blank") {
                 forceBlank = true;
-            } else if (optionList.at(i).startsWith("vcp=")) {
+            } else if (optionList.at(i).startsWith(u"vcp=")) {
                 bool ok = false;
-                uint vcp = optionList.at(i).section('=', 1, 1).toUInt(&ok, 0);
+                uint vcp = optionList.at(i).section(u'=', 1, 1).toUInt(&ok, 0);
                 if (ok)
                     ddcVcp = vcp;
             }
@@ -114,19 +114,21 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
     if (!ddcDevice.isEmpty()) {
         int maxBrightness = -1;
 
-        QFile ddc(ddcDevice);
-        if (ddc.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
-            QByteArray msg(2, 0);
-            msg[0] = 0x01; // get vcp
-            msg[1] = ddcVcp & 0xff;
-            ddc.write(msg);
-            QThread::msleep(100);
-            QByteArray response = ddc.read(8);
-            if (response.size() != 8) {
-                qWarning() << "DDC response size is not 8 bytes";
-                maxBrightness = 100;
-            } else {
-                maxBrightness = uint(response.at(4)) << 8 | uint(response.at(5));
+        {
+            QFile ddc(ddcDevice);
+            if (ddc.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
+                QByteArray msg(2, 0);
+                msg[0] = 0x01; // get vcp
+                msg[1] = char(ddcVcp & 0xff);
+                ddc.write(msg);
+                QThread::msleep(100);
+                QByteArray response = ddc.read(8);
+                if (response.size() != 8) {
+                    qWarning() << "DDC response size is not 8 bytes";
+                    maxBrightness = 100;
+                } else {
+                    maxBrightness = int(uint(response.at(4)) << 8 | uint(response.at(5)));
+                }
             }
         }
 
@@ -145,9 +147,9 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
                 int b = qBound(0, int(maxBrightness * brightness), maxBrightness);
                 QByteArray msg(4, 0);
                 msg[0] = 0x03; // set vcp
-                msg[1] = ddcVcp & 0xff;
-                msg[2] = (b >> 8) & 0xff;
-                msg[3] = (b & 0xff);
+                msg[1] = char(ddcVcp & 0xff);
+                msg[2] = char((b >> 8) & 0xff);
+                msg[3] = char(b & 0xff);
                 ddc.write(msg);
                 ddc.close();
 
@@ -203,8 +205,8 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
                 if (forceBlank) {
                     QFile blankFile(backlightDevice % qSL("/device/graphics/fb0/blank"));
                     if (blankFile.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
-                        QByteArray data = qFuzzyIsNull(brightness) ? "1\n" : "0\n";
-                        blankFile.write(data);
+                        QByteArray blankData = qFuzzyIsNull(brightness) ? "1\n" : "0\n";
+                        blankFile.write(blankData);
                         blankFile.close();
                     }
                 }
@@ -396,10 +398,10 @@ bool ScreenBrightness::eventFilter(QObject *watched, QEvent *event)
             setScreenSaverState(IsActive);
             if (wasBlanked)
                 return true; // eat the wake-up event
+            break;
         }
         default:
             break;
-
         }
     }
     return QObject::eventFilter(watched, event);

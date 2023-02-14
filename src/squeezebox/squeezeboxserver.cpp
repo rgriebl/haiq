@@ -32,9 +32,9 @@ using namespace std::placeholders;
 
 void SqueezeBoxServer::onPlayersReply(const QStringList &result)
 {
-    const auto parsed = parseExtendedResult(result, "playerindex");
+    const auto parsed = parseExtendedResult(result, u"playerindex"_qs);
 
-    if (parsed.first.value("count").toInt() != parsed.second.count())
+    if (parsed.first.value(u"count"_qs).toInt() != parsed.second.count())
         return;
 
     //qWarning() << parsed.second;
@@ -42,13 +42,13 @@ void SqueezeBoxServer::onPlayersReply(const QStringList &result)
     QStringList existingPlayerIds = m_players.keys();
 
     for (const auto &sbplayer : parsed.second) {
-        const QString id = sbplayer.value("playerid");
-        const QString ip = sbplayer.value("ip").section(':', 0, -2); // chop off port number
-        const QString name = sbplayer.value("name");
+        const QString id = sbplayer.value(u"playerid"_qs);
+        const QString ip = sbplayer.value(u"ip"_qs).section(u':', 0, -2); // chop off port number
+        const QString name = sbplayer.value(u"name"_qs);
 
         if (m_nameFilter.isEmpty() || m_nameFilter.contains(name)) {
-            auto it = m_players.find(id);
-            if (it != m_players.end()) {
+            auto it = m_players.constFind(id);
+            if (it != m_players.cend()) {
                 auto player = *it;
 
                 if (player->name() != name) {
@@ -70,7 +70,7 @@ void SqueezeBoxServer::onPlayersReply(const QStringList &result)
 
                 if (isThisPlayer != willBeThisPlayer) {
                     m_thisPlayer = willBeThisPlayer ? player : nullptr;
-                    emit thisPlayerChanged(m_thisPlayer);
+                    emit thisPlayerChanged();
                 }
             } else {
                 auto player = new SqueezeBoxPlayer();
@@ -85,11 +85,11 @@ void SqueezeBoxServer::onPlayersReply(const QStringList &result)
                 if (!m_thisPlayerName.isEmpty()) {
                     if (name == m_thisPlayerName) {
                         m_thisPlayer = player;
-                        emit thisPlayerChanged(m_thisPlayer);
+                        emit thisPlayerChanged();
                     }
                 } else if (m_ipAddresses.contains(ip)) {
                     m_thisPlayer = player;
-                    emit thisPlayerChanged(m_thisPlayer);
+                    emit thisPlayerChanged();
                 }
             }
         }
@@ -101,7 +101,7 @@ void SqueezeBoxServer::onPlayersReply(const QStringList &result)
         emit playersChanged();
         if (player == m_thisPlayer) {
             m_thisPlayer.clear();
-            emit thisPlayerChanged(m_thisPlayer);
+            emit thisPlayerChanged();
         }
         delete player;
     }
@@ -109,9 +109,10 @@ void SqueezeBoxServer::onPlayersReply(const QStringList &result)
 
 QVariantList SqueezeBoxAlarm::dayOfWeekListFromString(const QString &s)
 {
+    const auto sl = s.split(u',');
     QVariantList vl;
-    auto sl = s.split(",");
-    for (auto str : sl)
+    vl.reserve(sl.size());
+    for (const auto &str : sl)
         vl << str.toInt();
     return vl;
 }
@@ -122,7 +123,7 @@ QString SqueezeBoxAlarm::dayOfWeekListToString(const QVariantList &vl)
         return {};
 
     QStringList dow;
-    for (auto v : vl) {
+    for (const auto &v : vl) {
         bool convertOk = false;
         int d = v.toInt(&convertOk);
         if (!convertOk || (d < 0) || (d > 6)) {
@@ -138,9 +139,9 @@ QString SqueezeBoxAlarm::dayOfWeekListToString(const QVariantList &vl)
 
 void SqueezeBoxServer::onPlayerAlarmsReply(const QString &playerId, const QStringList &result)
 {
-    const auto parsed = SqueezeBoxServer::parseExtendedResult(result, "id");
+    const auto parsed = SqueezeBoxServer::parseExtendedResult(result, u"id"_qs);
 
-    if (parsed.first.value("count").toInt() != parsed.second.count())
+    if (parsed.first.value(u"count"_qs).toInt() != parsed.second.count())
         return;
 
     SqueezeBoxPlayer *player = m_players.value(playerId);
@@ -150,18 +151,18 @@ void SqueezeBoxServer::onPlayerAlarmsReply(const QString &playerId, const QStrin
     QStringList existingAlarmIds = player->m_alarms.keys();
 
     for (const auto &sbalarm : parsed.second) {
-        QString id = sbalarm.value("id");
+        QString id = sbalarm.value(u"id"_qs);
 
-        auto it = player->m_alarms.find(id);
-        if (it != player->m_alarms.end()) {
+        auto it = player->m_alarms.constFind(id);
+        if (it != player->m_alarms.cend()) {
             auto alarm = *it;
 
-            bool newRepeat = sbalarm.value("repeat") == "1";
-            bool newEnabled = sbalarm.value("enabled") == "1";
-            int newTime = sbalarm.value("time").toInt();
-            QVariantList newDow = SqueezeBoxAlarm::dayOfWeekListFromString(sbalarm.value("dow"));
-            qreal newVolume = sbalarm.value("volume").toDouble();
-            QUrl newUrl = sbalarm.value("url");
+            bool newRepeat = sbalarm.value(u"repeat"_qs) == u"1";
+            bool newEnabled = sbalarm.value(u"enabled"_qs) == u"1";
+            int newTime = sbalarm.value(u"time"_qs).toInt();
+            QVariantList newDow = SqueezeBoxAlarm::dayOfWeekListFromString(sbalarm.value(u"dow"_qs));
+            qreal newVolume = sbalarm.value(u"volume"_qs).toDouble();
+            QUrl newUrl = sbalarm.value(u"url"_qs);
 
             if (alarm->m_enabled != newEnabled) {
                 alarm->m_enabled = newEnabled;
@@ -177,7 +178,7 @@ void SqueezeBoxServer::onPlayerAlarmsReply(const QString &playerId, const QStrin
             }
             if (alarm->m_dayOfWeek != newDow) {
                 alarm->m_dayOfWeek = newDow;
-                emit alarm->dayOfWeekChanged(newDow);
+                emit alarm->dayOfWeekChanged();
             }
             if (!qFuzzyCompare(alarm->m_volume, newVolume)) {
                 alarm->m_volume = newVolume;
@@ -192,12 +193,12 @@ void SqueezeBoxServer::onPlayerAlarmsReply(const QString &playerId, const QStrin
             auto alarm = new SqueezeBoxAlarm(player);
             QQmlEngine::setObjectOwnership(alarm, QQmlEngine::CppOwnership);
             alarm->m_alarmId = id;
-            alarm->m_enabled = sbalarm.value("enabled") == "1";
-            alarm->m_repeat = sbalarm.value("repeat") == "1";
-            alarm->m_time = sbalarm.value("time").toInt();
-            alarm->m_dayOfWeek = SqueezeBoxAlarm::dayOfWeekListFromString(sbalarm.value("dow"));
-            alarm->m_volume = sbalarm.value("volume").toDouble() / 100.;
-            alarm->m_url = sbalarm.value("url");
+            alarm->m_enabled = sbalarm.value(u"enabled"_qs) == u"1";
+            alarm->m_repeat = sbalarm.value(u"repeat"_qs) == u"1";
+            alarm->m_time = sbalarm.value(u"time"_qs).toInt();
+            alarm->m_dayOfWeek = SqueezeBoxAlarm::dayOfWeekListFromString(sbalarm.value(u"dow"_qs));
+            alarm->m_volume = sbalarm.value(u"volume"_qs).toDouble() / 100.;
+            alarm->m_url = sbalarm.value(u"url"_qs);
             player->m_alarms.insert(id, alarm);
             emit player->alarmsChanged();
             emit player->alarmAdded(alarm);
@@ -214,7 +215,7 @@ void SqueezeBoxServer::onPlayerAlarmsReply(const QString &playerId, const QStrin
 
 void SqueezeBoxServer::onPlayerPrefAlarmsEnabledReply(const QString &playerId, const QStringList &result)
 {
-    auto player = m_players[playerId];
+    auto player = m_players.value(playerId);
 
     if (!player)
         return;
@@ -256,15 +257,15 @@ void SqueezeBoxServer::setThisPlayerAlarmState(const QString &newState)
 {
     // Android only -- we get an Intent when the alarm has already gone active
 
-    auto setState = [](SqueezeBoxPlayer *player, const QString &newState) {
+    auto setState = [](SqueezeBoxPlayer *player, const QString &state) {
         if (player) {
-            if (newState == "sound")
+            if (state == u"sound")
                 player->updateAlarmActive(true);
-            else if (newState == "end")
+            else if (state == u"end")
                 player->updateAlarmActive(false);
-            else if (newState == "snooze")
+            else if (state == u"snooze")
                 player->updateSnoozing(true);
-            else if (newState == "snooze_end")
+            else if (state == u"snooze_end")
                 player->updateSnoozing(false);
         }
     };
@@ -364,7 +365,7 @@ SqueezeBoxServer::SqueezeBoxServer(const QString &serverHost, int serverPort, QO
     connect(&m_command, &QTcpSocket::connected, this, checkConnected);
     connect(&m_listen, &QTcpSocket::connected, this, checkConnected);
 
-    connect(this, &SqueezeBoxServer::connectedChanged, [this]() {
+    connect(this, &SqueezeBoxServer::connectedChanged, this, [this]() {
         if (m_connected) {
             // no login support atm
             m_listen.write("listen\r\n");
@@ -375,7 +376,7 @@ SqueezeBoxServer::SqueezeBoxServer(const QString &serverHost, int serverPort, QO
                 emit playerRemoved(player);
                 if (player == m_thisPlayer) {
                     m_thisPlayer.clear();
-                    emit thisPlayerChanged(m_thisPlayer);
+                    emit thisPlayerChanged();
                 }
                 delete player;
             }
@@ -403,20 +404,20 @@ SqueezeBoxServer::SqueezeBoxServer(const QString &serverHost, int serverPort, QO
             QString id = player->playerId();
 
             if (args.size() >= 4) {
-                if (args.at(1) == "client") {
+                if (args.at(1) == u"client") {
                     command({ "players", 0, 1000 }, std::bind(&SqueezeBoxServer::onPlayersReply, this, _1));
-                } else if (args.at(1) == "playerpref" && args.at(2) == "alarmsEnabled") {
+                } else if (args.at(1) == u"playerpref" && args.at(2) == u"alarmsEnabled") {
                     player->updateAlarmsEnabled(args.at(3));
-                } else if (args.at(1) == "alarm") {
-                    if (args.at(2) == "update" || args.at(2) == "add" || args.at(2) == "delete") {
+                } else if (args.at(1) == u"alarm") {
+                    if (args.at(2) == u"update" || args.at(2) == u"add" || args.at(2) == u"delete") {
                         command({ id, "alarms", 0, 1000, "filter:all" }, std::bind(&SqueezeBoxServer::onPlayerAlarmsReply, this, id, _1));
-                    } else if (args.at(2) == "sound") {
+                    } else if (args.at(2) == u"sound") {
                         player->updateAlarmActive(true);
-                    } else if (args.at(2) == "end") {
+                    } else if (args.at(2) == u"end") {
                         player->updateAlarmActive(false);
-                    } else if (args.at(2) == "snooze") {
+                    } else if (args.at(2) == u"snooze") {
                         player->updateSnoozing(true);
-                    } else if (args.at(2) == "snooze_end") {
+                    } else if (args.at(2) == u"snooze_end") {
                         player->updateSnoozing(false);
                     }
                 }
@@ -438,10 +439,11 @@ void SqueezeBoxServer::connectSockets()
     m_listen.connectToHost(m_serverHost, m_serverPort);
 }
 
-void SqueezeBoxServer::command(const QVariantList &args, std::function<void(const QStringList &)> callback = {})
+void SqueezeBoxServer::command(const QVariantList &args, const std::function<void(const QStringList &)> &callback = {})
 {
     QStringList sl;
-    for (auto arg : args)
+    sl.reserve(args.size());
+    for (const auto &arg : args)
         sl << arg.toString();
     send(sl, callback);
 }
@@ -453,8 +455,8 @@ QPair<StringMap, QVector<StringMap>> SqueezeBoxServer::parseExtendedResult(const
     StringMap currentObject;
     bool inObject = false;
 
-    for (auto tagValue : result) {
-        int pos = tagValue.indexOf(':');
+    for (const auto &tagValue : result) {
+        auto pos = tagValue.indexOf(':');
         const QString tag(pos <= 0 ? QString() : tagValue.left(pos));
         const QString value(tagValue.mid(pos + 1));
 
@@ -476,10 +478,11 @@ QPair<StringMap, QVector<StringMap>> SqueezeBoxServer::parseExtendedResult(const
     return qMakePair(global, objects);
 }
 
-QList<QObject *> SqueezeBoxServer::players()
+QList<QObject *> SqueezeBoxServer::players() const
 {
     QObjectList players;
-    for (auto &player : m_players)
+    players.reserve(m_players.size());
+    for (const auto &player : m_players)
         players << player;
     return players;
 }
@@ -502,7 +505,7 @@ void SqueezeBoxServer::send(const QStringList &args, const std::function<void (c
     QByteArray out;
     qWarning() << "SqueezeBox server sending command:" << args;
 
-    for (auto arg : args) {
+    for (const auto &arg : args) {
         auto rawArg = QUrl::toPercentEncoding(arg);
         if (!out.isEmpty())
             out.append(' ');
@@ -511,7 +514,6 @@ void SqueezeBoxServer::send(const QStringList &args, const std::function<void (c
 
     static quint64 counter = 0;
     Command c { ++counter, out, callback };
-
 
     if (!m_sent) {
         m_sent = c;
@@ -524,7 +526,7 @@ void SqueezeBoxServer::send(const QStringList &args, const std::function<void (c
 void SqueezeBoxServer::parseCommandData()
 {
     do {
-        int eol = m_commandData.indexOf('\n');
+        auto eol = m_commandData.indexOf('\n');
         if (eol < 0)
             break;
 
@@ -551,9 +553,10 @@ void SqueezeBoxServer::parseCommandData()
 
         //qWarning() << "RECEIVED REPLY:" << msg;
 
-        QStringList args;
         const auto rawArgs = msg.split(' ');
-        for (auto rawArg : rawArgs)
+        QStringList args;
+        args.reserve(rawArgs.size());
+        for (const auto &rawArg : rawArgs)
             args << QUrl::fromPercentEncoding(rawArg);
         if (m_sent->callback)
             m_sent->callback(args);
@@ -572,7 +575,7 @@ void SqueezeBoxServer::parseCommandData()
 void SqueezeBoxServer::parseListenData()
 {
     do {
-        int eol = m_listenData.indexOf('\n');
+        auto eol = m_listenData.indexOf('\n');
         if (eol < 0)
             break;
 
@@ -582,9 +585,10 @@ void SqueezeBoxServer::parseListenData()
         if (msg == "listen")
             continue;
 
-        QStringList args;
         const auto rawArgs = msg.split(' ');
-        for (auto rawArg : rawArgs)
+        QStringList args;
+        args.reserve(rawArgs.size());
+        for (const auto &rawArg : rawArgs)
             args << QUrl::fromPercentEncoding(rawArg);
 
         if (!args.isEmpty())
@@ -760,7 +764,7 @@ bool SqueezeBoxPlayer::alarmsEnabled() const
 
 void SqueezeBoxPlayer::updateAlarmsEnabled(const QString &s)
 {
-    bool newAlarmsEnabled = (s == "1");
+    bool newAlarmsEnabled = (s == u"1");
     if (newAlarmsEnabled != m_alarmsEnabled) {
         m_alarmsEnabled = newAlarmsEnabled;
         emit alarmsEnabledChanged(newAlarmsEnabled);
@@ -829,7 +833,8 @@ void SqueezeBoxPlayer::setAlarmsEnabled(bool alarmsEnabled)
 QList<QObject *> SqueezeBoxPlayer::alarms() const
 {
     QObjectList alarms;
-    for (auto &alarm : m_alarms)
+    alarms.reserve(m_alarms.size());
+    for (const auto &alarm : m_alarms)
         alarms << alarm;
     return alarms;
 }
@@ -919,6 +924,7 @@ QString SqueezeBoxAlarm::dayOfWeekString() const
     //qWarning() << "DLTR 1" << m_dayOfWeek;
 
     QVector<int> days;
+    days.reserve(m_dayOfWeek.size());
     for (const auto &v : m_dayOfWeek) {
         int d = v.toInt();
         // European format: Sunday is 7
@@ -933,7 +939,7 @@ QString SqueezeBoxAlarm::dayOfWeekString() const
     //qWarning() << "DLTR 1" << days;
 
     auto dayName = [](int d) {
-        return QLocale("de").standaloneDayName(d, QLocale::ShortFormat);
+        return QLocale(u"de").standaloneDayName(d, QLocale::ShortFormat);
     };
 
     QString result;
@@ -1018,7 +1024,7 @@ void SqueezeBoxAlarm::setDayOfWeek(const QVariantList &dayOfWeek)
                                             qSL("id:") + m_alarmId,
                                             qSL("dow:") + SqueezeBoxAlarm::dayOfWeekListToString(dayOfWeek) });
     m_dayOfWeek = dayOfWeek;
-    emit dayOfWeekChanged(m_dayOfWeek);
+    emit dayOfWeekChanged();
 }
 
 void SqueezeBoxAlarm::setVolume(qreal volume)

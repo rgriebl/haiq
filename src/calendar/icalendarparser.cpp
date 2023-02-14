@@ -119,7 +119,7 @@ void ICalendarParser::parseLine(const QByteArray &line)
 void ICalendarParser::parseName()
 {
     for (; m_pos < m_line.length(); ++m_pos) {
-        QChar c = m_line[m_pos];
+        QChar c = m_line.at(m_pos);
 
         if (c.isLetterOrNumber() || c == '-')
             m_propertyName += c;
@@ -157,9 +157,9 @@ void ICalendarParser::parseParameter()
 
     auto param = qMakePair(m_parameterName.toUpper(), m_parameterValues);
 
-    if (param.first == "ENCODING") {
+    if (param.first == u"ENCODING") {
         // handle this internally
-        if (param.second.size() == 1 && param.second.first().toUpper() == "BASE64")
+        if (param.second.size() == 1 && param.second.first().toUpper() == u"BASE64")
             m_valueAsBase64 = true;
     } else {
         m_parameters << param;
@@ -172,7 +172,7 @@ void ICalendarParser::parseParameter()
 void ICalendarParser::parseParameterName()
 {
     for (; m_pos < m_line.length(); ++m_pos) {
-        QChar c = m_line[m_pos];
+        QChar c = m_line.at(m_pos);
 
         if (c.isLetterOrNumber() || c == '-')
             m_parameterName += c;
@@ -193,7 +193,7 @@ void ICalendarParser::parseParameterValue()
         ++m_pos;
 
     for (; m_pos < m_line.length(); ++m_pos) {
-        QChar c = m_line[m_pos];
+        QChar c = m_line.at(m_pos);
 
         bool quote = (c == '"');
         bool ok = (c >= ' ') || (c == '\t');
@@ -233,39 +233,40 @@ void ICalendarParser::parseValue()
 
     ++m_pos;
     const QString value = m_line.mid(m_pos, m_line.length() - m_pos);
-    QString valueType = firstParameterValue("VALUE");
-    QString tzId = firstParameterValue("TZID");
+    QString valueType = firstParameterValue(u"VALUE"_qs);
+    QString tzId = firstParameterValue(u"TZID"_qs);
 
     if (valueType.isEmpty()) {
         static QHash<QString, QString> defaultTypes = {
-            { "DTSTART", "DATE-TIME" },
-            { "DTEND", "DATE-TIME" },
-            { "DTSTAMP", "DATE-TIME" },
-            { "RRULE", "RECUR" },
-            { "RDATE", "DATE-TIME-LIST" },
-            { "EXDATE", "DATE-TIME-LIST" }
+            { u"DTSTART"_qs, u"DATE-TIME"_qs },
+            { u"DTEND"_qs,   u"DATE-TIME"_qs },
+            { u"DTSTAMP"_qs, u"DATE-TIME"_qs },
+            { u"RRULE"_qs,   u"RECUR"_qs },
+            { u"RDATE"_qs,   u"DATE-TIME-LIST"_qs },
+            { u"EXDATE"_qs,  u"DATE-TIME-LIST"_qs }
         };
         valueType = defaultTypes.value(m_propertyName);
     }
 
-    if (valueType == "BINARY") {
+    if (valueType == u"BINARY") {
         if (!m_valueAsBase64)
             throw createException("binary value types require base64 encoding");
         m_propertyValue = QByteArray::fromBase64(value.toLatin1());
-    } else if (valueType == "BOOLEAN") {
-        if (value.toUpper() == "TRUE")
+    } else if (valueType == u"BOOLEAN") {
+        if (value.toUpper() == u"TRUE")
             m_propertyValue = true;
-        else if (value.toUpper() == "FALSE")
+        else if (value.toUpper() == u"FALSE")
             m_propertyValue = false;
         else
             throw createException("invalid value for boolean type");
-    } else if (valueType == "DATE") {
+    } else if (valueType == u"DATE") {
         m_propertyValue = parseDate(value);
-    } else if (valueType == "DATE-LIST") {
+    } else if (valueType == u"DATE-LIST") {
         m_propertyValue = QVariant::fromValue(parseDateList(value));
-    } else if (valueType == "TIME") {
+    } else if (valueType == u"TIME") {
         QStringList timeStrings = value.split(',');
         QList<QDateTime> times;
+        times.reserve(timeStrings.size());
         for (const QString &timeString : timeStrings) {
             auto dt = parseDateTime("00000000T" + timeString, tzId);
             if (!dt.isValid())
@@ -279,21 +280,21 @@ void ICalendarParser::parseValue()
         else
             throw createException("empty time specification");
 
-    } else if (valueType == "DATE-TIME") {
+    } else if (valueType == u"DATE-TIME") {
         m_propertyValue = parseDateTime(value, tzId);
-    } else if (valueType == "DATE-TIME-LIST") {
+    } else if (valueType == u"DATE-TIME-LIST") {
         m_propertyValue = QVariant::fromValue(parseDateTimeList(value, tzId));
-    } else if (valueType == "FLOAT") {
+    } else if (valueType == u"FLOAT") {
         m_propertyValue = value.toFloat();
-    } else if (valueType == "INTEGER") {
+    } else if (valueType == u"INTEGER") {
         m_propertyValue = value.toInt();
-    } else if (valueType == "URI") {
+    } else if (valueType == u"URI") {
         QUrl url = QUrl::fromUserInput(value);
         //if (!url.isValid())
         //    throw createException("invalid URI");
         m_propertyValue = url;
-    } else if (valueType == "UTC-OFFSET") {
-        QRegularExpression re("^[+-](\\d\\d)(\\d\\d)(\\d\\d)?$");
+    } else if (valueType == u"UTC-OFFSET") {
+        QRegularExpression re(u"^[+-](\\d\\d)(\\d\\d)(\\d\\d)?$"_qs);
         auto match = re.match(value);
         if (match.hasMatch()) {
             int hh = match.captured(1).toInt();
@@ -312,7 +313,7 @@ void ICalendarParser::parseValue()
         } else {
             throw createException("invalid UTC-OFFSET");
         }
-    } else if (valueType == "RECUR") {
+    } else if (valueType == u"RECUR") {
         m_propertyValue.setValue(parseRecurrence(value, tzId));
     } else {
         m_propertyValue = value;
@@ -335,7 +336,7 @@ void ICalendarParser::parseValue()
 
 QDate ICalendarParser::parseDate(const QString &dateString)
 {
-    auto d = QDate::fromString(dateString, "yyyyMMdd");
+    auto d = QDate::fromString(dateString, u"yyyyMMdd"_qs);
     if (!d.isValid())
         throw createException("invalid date specification");
     return d;
@@ -345,8 +346,9 @@ QList<QDate> ICalendarParser::parseDateList(const QString &dateString)
 {
     QStringList dateStrings = dateString.split(',');
     QList<QDate> dates;
-    for (const QString &dateString : dateStrings)
-        dates << parseDate(dateString);
+    dates.reserve(dateStrings.size());
+    for (const QString &ds : dateStrings)
+        dates << parseDate(ds);
     if (dates.isEmpty())
         throw createException("empty date specification");
     return dates;
@@ -371,14 +373,14 @@ QDateTime ICalendarParser::parseDateTime(const QString &dtString, const QString 
     }
 
     QDateTime dt;
-    if (dtString.endsWith("Z")) {
+    if (dtString.endsWith(u"Z")) {
         if (tz.isValid())
             throw createException("cannot have TZID and 'Z' UTC designator at the same time");
 
-        dt = QDateTime::fromString(dtString, "yyyyMMdd'T'HHmmss'Z'");
+        dt = QDateTime::fromString(dtString, u"yyyyMMdd'T'HHmmss'Z'"_qs);
         dt.setTimeSpec(Qt::UTC);
     } else {
-        dt = QDateTime::fromString(dtString, "yyyyMMdd'T'HHmmss");
+        dt = QDateTime::fromString(dtString, u"yyyyMMdd'T'HHmmss"_qs);
         if (tz.isValid()) {
             //dt.setTimeSpec(Qt::TimeZone);
             dt.setTimeZone(tz);
@@ -404,8 +406,9 @@ QList<QDateTime> ICalendarParser::parseDateTimeList(const QString &dateTimeStrin
 {
     QStringList dateTimeStrings = dateTimeString.split(',');
     QList<QDateTime> dateTimes;
-    for (const QString &dateTimeString : dateTimeStrings)
-        dateTimes << parseDateTime(dateTimeString, tzId);
+    dateTimes.reserve(dateTimeStrings.size());
+    for (const QString &dts : dateTimeStrings)
+        dateTimes << parseDateTime(dts, tzId);
     if (dateTimes.isEmpty())
         throw createException("empty date-time specification");
     return dateTimes;
@@ -420,29 +423,29 @@ ICalendarRecurrence ICalendarParser::parseRecurrence(const QString &value, const
     bool hasInterval = false;
     QStringList parts = value.split(';');
     for (const auto &part : parts) {
-        int pos = part.indexOf('=');
+        auto pos = part.indexOf(u'=');
         if (pos > 0) {
             const QString name = part.left(pos);
             const QString val = part.mid(pos + 1);
 
-            if (name == "FREQ") {
+            if (name == u"FREQ") {
                 static QHash<QString, int> intervals = {
-                    { "SECONDLY", 1 },
-                    { "MINUTELY", 60 },
-                    { "HOURLY", 60*60 },
-                    { "DAILY", 60*60*24 },
-                    { "WEEKLY", 60*60*24*7 },
-                    { "MONTHLY", -1 },
-                    { "YEARLY", -12 },
+                    { u"SECONDLY"_qs, 1 },
+                    { u"MINUTELY"_qs, 60 },
+                    { u"HOURLY"_qs,   60*60 },
+                    { u"DAILY"_qs,    60*60*24 },
+                    { u"WEEKLY"_qs,   60*60*24*7 },
+                    { u"MONTHLY"_qs,  -1 },
+                    { u"YEARLY"_qs,   -12 },
                 };
                 rrule.m_frequency = intervals.value(val);
-            } else if (name == "INTERVAL") {
+            } else if (name == u"INTERVAL") {
                 rrule.m_interval = val.toInt();
                 hasInterval = true;
-            } else if (name == "COUNT") {
+            } else if (name == u"COUNT") {
                 rrule.m_count = val.toInt();
                 hasCount = true;
-            } else if (name == "UNTIL") {
+            } else if (name == u"UNTIL") {
                 rrule.m_until = parseDateTime(val, tzId);
                 hasUntil = true;
             }
@@ -459,10 +462,10 @@ ICalendarRecurrence ICalendarParser::parseRecurrence(const QString &value, const
 
 Exception ICalendarParser::createException(const char *message) const
 {
-    QString msg = "Error while parsing:\n" + m_line + "\n";
-    msg.append(QString(m_pos, ' '));
-    msg.append("^\n");
-    msg.append(message);
+    QString msg = u"Error while parsing:\n"_qs + m_line + u"\n"_qs;
+    msg.append(QString(m_pos, u' '));
+    msg.append(u"^\n"_qs);
+    msg.append(QString::fromLatin1(message));
 
     return Exception(msg);
 }

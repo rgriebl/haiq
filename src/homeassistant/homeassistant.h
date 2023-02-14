@@ -34,7 +34,7 @@ QT_FORWARD_DECLARE_CLASS(QQmlEngine)
 class HomeAssistant : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QUrl baseUrl READ baseUrl)
+    Q_PROPERTY(QUrl baseUrl READ baseUrl CONSTANT)
 
 public:    
     // only public to auto-generate QDebug pretty-printing
