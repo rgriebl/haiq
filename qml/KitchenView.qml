@@ -273,7 +273,7 @@ TabletView {
 
                     Timer {
                         id: lightPopupHideTimer
-                        interval: 5000
+                        interval: 3000
                         onTriggered: lightPopup.close()
                     }
 
@@ -282,6 +282,9 @@ TabletView {
                         width: root.contentItem.width - 2 * (root.contentItem.width - d) - 40
                         x: -20 - width
                         height: lightPopupSlider.implicitHeight
+
+                        modal: true
+                        dim: false
 
                         // force re-evaluation on show/hide
                         property real d: { if (visible || !visible) return lightButton.parent.mapToItem(root.contentItem, lightButton.x, 0).x }
@@ -292,13 +295,18 @@ TabletView {
                         SceneSlider {
                             font: lightButton.font
                             anchors.fill: parent
+                            scale: 2
 
                             id: lightPopupSlider
                             from: 0; to: 100; stepSize: 5
                             sliderType: SceneSlider.BrightnessType
 
-                            onMoved: HomeAssistant.callService('light.turn_on', lightButton.entity,
-                                                               { brightness_pct: value })
+                            onMoved: {
+                                lightPopupHideTimer.restart()
+
+                                HomeAssistant.callService('light.turn_on', lightButton.entity,
+                                                          { brightness_pct: value })
+                            }
                         }
                     }
                 }

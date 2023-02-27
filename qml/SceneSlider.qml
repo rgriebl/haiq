@@ -37,6 +37,7 @@ Slider {
     property bool showIcon: (sliderType === SceneSlider.VolumeType
                              || sliderType === SceneSlider.BrightnessType) && !_showLabelTemporary
     property var customGradient
+    property real scale: 1
 
     live: true
 
@@ -54,8 +55,8 @@ Slider {
         onTriggered: control._showLabelTemporary = false
     }
 
-    implicitWidth: font.pixelSize * 8
-    implicitHeight: font.pixelSize * 2
+    implicitWidth: font.pixelSize * 8 * control.scale
+    implicitHeight: font.pixelSize * 2 * control.scale
 
     background: Item {
         x: control.leftPadding + control.font.pixelSize / 2
@@ -80,10 +81,6 @@ Slider {
 
             radius: control.font.pixelSize / 4
             color: Universal.foreground
-
-            // poor man's glow...
-            border.width: /*GraphicsInfo.api === GraphicsInfo.Software ? 2 :*/ 0
-            border.color: Universal.background
 
             gradient: {
                 switch (control.sliderType) {
@@ -124,12 +121,11 @@ Slider {
             anchors.fill: parent
             visible: control.sliderType === SceneSlider.VolumeType
             antialiasing: true
-            layer.enabled: true /*GraphicsInfo.api !== GraphicsInfo.Software*/
+            layer.enabled: true
             layer.samples: 4
             layer.effect: Glow {
                 radius: 10
                 spread: 0.2
-//                samples: 21
                 color: Universal.background
                 cached: true
             }
@@ -175,10 +171,6 @@ Slider {
                 PathLine {
                     x: 0; y: triangle.height
                 }
-
-                // poor man's glow...
-                strokeWidth: /*GraphicsInfo.api === GraphicsInfo.Software ? 2 :*/ 0
-                strokeColor: Universal.background
             }
         }
     }
@@ -186,8 +178,8 @@ Slider {
     handle: Item {
         x: control.leftPadding + control.visualPosition * (control.availableWidth - width)
         y: control.topPadding + control.availableHeight / 2 - height / 2
-        width: control.font.pixelSize * 2
-        height: control.font.pixelSize * 2
+        width: control.font.pixelSize * 2 * control.scale
+        height: control.font.pixelSize * 2 * control.scale
 
         RectangularGlow {
             anchors.fill: bg
@@ -203,8 +195,6 @@ Slider {
             radius: height / 2
             color: control.sliderType === SceneSlider.RGBType ? Qt.hsva(control.position, 1, 1, 1)
                                                               : control.valueToHandleColor(control.value)
-            border.width: /*GraphicsInfo.api === GraphicsInfo.Software ? 2 :*/ 0
-            border.color: Universal.background
         }
 
         Label {
@@ -218,6 +208,7 @@ Slider {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             textFormat: Text.RichText
+            font.pixelSize: control.font.pixelSize * control.scale
         }
         SvgIcon {
             anchors.fill: parent
@@ -226,6 +217,7 @@ Slider {
             source: control.sliderType === SceneSlider.VolumeType ? '../icons/mdi/volume-high'
                                                                   : '../icons/mdi/brightness-5'
             color: Universal.foreground
+            scale: control.scale
         }
     }
     Tracer { }
