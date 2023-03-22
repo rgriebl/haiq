@@ -1,19 +1,10 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/haiq.svg</file>
-        <file>icons/darksky/clear-day.svg</file>
         <file>icons/darksky/clear-night.svg</file>
         <file>icons/darksky/cloudy.svg</file>
         <file>icons/darksky/fog.svg</file>
         <file>icons/darksky/hail.svg</file>
-        <file>icons/darksky/partly-cloudy-day.svg</file>
-        <file>icons/darksky/partly-cloudy-night.svg</file>
-        <file>icons/darksky/rain.svg</file>
-        <file>icons/darksky/sleet.svg</file>
-        <file>icons/darksky/snow.svg</file>
-        <file>icons/darksky/thunderstorm.svg</file>
-        <file>icons/darksky/tornado.svg</file>
-        <file>icons/darksky/wind.svg</file>
         <file>icons/printer.svg</file>
         <file>icons/printer-alert.svg</file>
         <file>icons/printer-off.svg</file>
@@ -124,5 +115,15 @@
         <file>icons/mdi/backspace.svg</file>
         <file>icons/mdi/home-assistant.svg</file>
         <file>icons/mdi/view-grid.svg</file>
+        <file>icons/darksky/lightning.svg</file>
+        <file>icons/darksky/lightning-rainy.svg</file>
+        <file>icons/darksky/partlycloudy.svg</file>
+        <file>icons/darksky/pouring.svg</file>
+        <file>icons/darksky/rainy.svg</file>
+        <file>icons/darksky/snowy.svg</file>
+        <file>icons/darksky/snowy-rainy.svg</file>
+        <file>icons/darksky/sunny.svg</file>
+        <file>icons/darksky/windy.svg</file>
+        <file>icons/darksky/windy-variant.svg</file>
     </qresource>
 </RCC>

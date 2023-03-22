@@ -158,7 +158,7 @@ TabletView {
             Layout.bottomMargin: 10
 
             KitchenPage { }
-            WeatherPage { entity: "sensor.wetter" }
+            WeatherPage { location: "osterseeon" }
             AlarmPage { }
             HomeAssistantPage { }
             BrowserPage { }

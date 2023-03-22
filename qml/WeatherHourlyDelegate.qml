@@ -66,7 +66,7 @@ Tile {
             anchors.top: hcolumn.top
             anchors.margins: hcolumn.width / 20
             
-            name: "darksky/" + model.icon
+            name: "darksky/" + model.weather
             size: hcolumn.width
         }
         
@@ -79,7 +79,7 @@ Tile {
             font.pixelSize: delegate.fontSize * 2
             padding: 0
             
-            temperature: Number(model.apparent_temperature)
+            temperature: Number(model.temperature)
         }
         SvgIcon {
             id: tempIcon
@@ -96,14 +96,14 @@ Tile {
             font.pixelSize: delegate.fontSize * 2
             padding: 0
             
-            property int percent: Math.round(precip_probability)
+            property int percent: Math.round(model.precipitation_probability)
             
             text: percent ? root.addUnit(this, percent, '%') : '-'
             textFormat: Qt.RichText
         }
         SvgIcon {
             id: rainIcon
-            icon: 'darksky/rain'
+            icon: 'darksky/rainy'
             anchors.verticalCenter: rainProbability.bottom
             size: delegate.fontSize * 2
         }
@@ -122,9 +122,9 @@ Tile {
             font.pixelSize: delegate.fontSize * 2
             padding: 0
             
-            property int mm: Math.round(precip_intensity)
+            property int mm: Math.round(model.precipitation_probability)
             
-            text: (precip_probability <= 0 || mm <= 0) ? '-' : root.addUnit(this, mm, 'mm')
+            text: (rainProbability.percent <= 0 || mm <= 0) ? '-' : root.addUnit(this, mm, 'mm')
             textFormat: Qt.RichText
         }
         
@@ -138,14 +138,14 @@ Tile {
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: delegate.fontSize * 2
             
-            property int speed: Math.round(wind_speed)
+            property int speed: Math.round(model.wind_speed)
             
             text: speed ? root.addUnit(this, speed, 'm/s') : ''
             textFormat: Qt.RichText
         }
         SvgIcon {
             id: windIcon
-            icon: 'darksky/wind'
+            icon: 'darksky/windy'
             anchors.verticalCenter: wind.verticalCenter
             size: delegate.fontSize * 2
         }

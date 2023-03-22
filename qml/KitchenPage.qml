@@ -156,12 +156,31 @@ Pane {
                 id: weatherRow
                 anchors.fill: parent
 
-                property string entity: "sensor.wetter"
+                property string location: "osterseeon"
                 spacing: font.pixelSize / 2
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: Window.window.showWeather()
+                }
+
+                Component.onCompleted: {
+                    HomeAssistant.subscribe("weather.dwd_weather_" + location, function(state, attributes) {
+                        weatherIcon.name = "darksky/" + state
+                        weatherTemp.temperature = attributes.temperature
+                        weatherTemp.temperatureFeelsLike = weatherTemp.temperature
+                    })
+                    HomeAssistant.subscribe("sensor.weather_report_" + location, function(state, attributes) {
+                        let lines = attributes.data.split('\n')
+                        for (let line of lines) {
+                            let s = ''
+                            line = line.trim()
+                            if (line === '' || line[0] === '*' || line[0] === '#' || line[line.length - 1] === '*')
+                                continue
+                            weatherForecast.text = line
+                            break
+                        }
+                    })
                 }
 
                 Tracer { }
@@ -176,12 +195,6 @@ Pane {
                         SvgIcon {
                             id: weatherIcon
                             size: weatherRow.font.pixelSize * 4
-
-                            Component.onCompleted: {
-                                HomeAssistant.subscribe(weatherRow.entity + "_icon_0d", function(state, attributes) {
-                                    name = "darksky/" + state
-                                })
-                            }
                         }
 
                         WeatherTemperatureLabel {
@@ -193,36 +206,22 @@ Pane {
                             minimumPixelSize: font.pixelSize / 2
                             fontSizeMode: Text.Fit
                             showFeelsLike: true
-
-                            Component.onCompleted: {
-                                HomeAssistant.subscribe(weatherRow.entity + "_temperature", function(state, attributes) {
-                                    temperature = state
-                                })
-                                HomeAssistant.subscribe(weatherRow.entity + "_apparent_temperature", function(state, attributes) {
-                                    temperatureFeelsLike = state
-                                })
-                            }
                         }
                     }
                     Label {
-                        property string forecast
+                        id: weatherForecast
 
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
-                        text: forecast
                         wrapMode: Text.WordWrap
                         font.pixelSize: weatherRow.font.pixelSize * 2
-                        minimumPixelSize: weatherRow.font.pixelSize
+                        minimumPixelSize: weatherRow.font.pixelSize / 2
                         fontSizeMode: Text.Fit
+                        elide: Text.ElideRight
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignHCenter
 
-                        Component.onCompleted: {
-                            HomeAssistant.subscribe(weatherRow.entity + "_summary_0d", function(state, attributes) {
-                                forecast = state
-                            })
-                        }
                         Tracer { }
                     }
                 }

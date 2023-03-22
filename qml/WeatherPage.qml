@@ -25,7 +25,7 @@ Pane {
     property alias currentPage: swipe.currentIndex
     background: null
 
-    property string entity
+    property string location
 
     property ListModel dailyWeatherModel: ListModel {
         dynamicRoles: true
@@ -79,35 +79,26 @@ Pane {
         anchors.horizontalCenter: parent.horizontalCenter
     }
 
-    readonly property int days: 5
+    readonly property int days: 8
     readonly property int hours: 48
 
     Component.onCompleted: {
 
         var daily_conditions = [
-                    'icon',
-                    'daytime_high_apparent_temperature',
-                    'overnight_low_apparent_temperature',
-                    'daytime_high_temperature',
-                    'overnight_low_temperature',
-                    'precip',
-                    'precip_intensity',
-                    'precip_probability',
-                    'pressure',
+                    'condition',
+                    'temperature',
+                    'templow',
+                    'precipitation',
+                    'precipitation_probability',
                     'wind_speed',
-                    'cloud_coverage',
                 ]
 
         var hourly_conditions = [
-                    'icon',
-                    'apparent_temperature',
+                    'weather',
                     'temperature',
-                    'precip',
-                    'precip_intensity',
-                    'precip_probability',
-                    'pressure',
+                    'precipitation',
+                    'precipitation_probability',
                     'wind_speed',
-                    'cloud_coverage',
                 ]
 
 
@@ -117,23 +108,30 @@ Pane {
             let properties = { 'day': d }
             for (let condition of daily_conditions) {
                 properties[condition] = '' // init model with dummy value
-                let sensor = root.entity + "_" + condition + '_' + d + 'd'
-                HomeAssistant.subscribe(sensor, function(state, attributes) {
-                    dailyWeatherModel.setProperty(d, condition, state)
-                })
             }
             dailyWeatherModel.insert(d, properties)
         }
-        // hourly
-        for (let h = 0; h <= hours; ++h) {
-            let properties = { 'hour': h }
-            for (let condition of hourly_conditions) {
-                properties[condition] = '' // init model with dummy value
-                let sensor = root.entity + "_" + condition + '_' + h + 'h'
-                HomeAssistant.subscribe(sensor, function(state, attributes) {
-                    hourlyWeatherModel.setProperty(h, condition, state)
-                })
+        HomeAssistant.subscribe("weather.dwd_weather_" + root.location, function(state, attributes) {
+            for (let d = 0; d < days; ++d) {
+                for (let condition of daily_conditions) {
+                    dailyWeatherModel.setProperty(d, condition, attributes.forecast[d][condition])
+                }
             }
+        })
+
+        // hourly
+        let properties = { }
+        for (let condition of hourly_conditions) {
+            properties[condition] = '' // init model with dummy value
+
+            HomeAssistant.subscribe("sensor." + condition + "_" + root.location, function(state, attributes) {
+                for (let h = 0; h <= hours; ++h) {
+                    hourlyWeatherModel.setProperty(h, condition, attributes.data[h].value)
+                }
+            })
+        }
+        for (let h = 0; h <= hours; ++h) {
+            properties['hour'] = h
             hourlyWeatherModel.insert(h, properties)
         }
     }
