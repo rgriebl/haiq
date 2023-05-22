@@ -89,7 +89,7 @@ ApplicationWindow {
             ListElement {
                 text: "FPS Anzeige"
                 iconName: 'mdi/counter'
-                action: function() { fpsMeter.visible = !fpsMeter.visible }
+                action: function() { fpsMeter.active = !fpsMeter.active }
             }
             ListElement {
                 text: "Standby"
