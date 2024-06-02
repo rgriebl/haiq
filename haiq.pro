@@ -1,4 +1,4 @@
-MIN_QT_VERSION = 6.2.0
+MIN_QT_VERSION = 6.6.0
 
 NAME        = "HAiQ"
 DESCRIPTION = "$$NAME - QML based UIs for Home-Assistant."

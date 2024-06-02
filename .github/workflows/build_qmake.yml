@@ -39,7 +39,7 @@ jobs:
           runs-on: windows-2019
           os: windows
           qt_host: 'windows'
-          qt_version: '6.4.2'
+          qt_version: '6.7.1'
           qt_arch: 'win64_msvc2019_64'
           qt_dir: "msvc2019_64"
           environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
@@ -53,23 +53,23 @@ jobs:
 
         - name: "macOS 64bit"
           artifact: "macOS"
-          runs-on: macos-11
+          runs-on: macos-13
           os: macos
           qt_host: 'mac'
-          qt_version: '6.4.2'
+          qt_version: '6.7.1'
           qt_arch: 'clang_64'
           qt_dir: 'macos'
 
         - name: "Android ARM"
           artifact: "Android-ARM"
-          runs-on: ubuntu-20.04
+          runs-on: ubuntu-22.04
           os: android
           android_abi: 'armv7'
-          android_ndk: '23.2.8568313'
+          android_ndk: '26.3.11579264'
           qt_host: 'linux'
           qt_host_arch: 'gcc_64'
           qt_target: 'android'
-          qt_version: '6.4.2'
+          qt_version: '6.7.1'
           qt_arch: 'android_armv7'
 
   # BUILD
@@ -242,7 +242,7 @@ jobs:
   release:
     needs: [ build ]
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v2
 
