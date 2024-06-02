@@ -13,21 +13,20 @@ Item {
     required property int offset
     required property string propertyName
     property alias strokeWidth: path.strokeWidth
-    property alias color0: stop0.color
-    property alias color1: stop1.color
-    property alias color2: stop2.color
+    property Gradient gradientStops: Gradient {
+        GradientStop { position: 0;    color: Qt.rgba(1, 0, 0, 0.5) }
+        GradientStop { position: 0.33; color: Qt.rgba(1, 1, 1, 0.5) }
+        GradientStop { position: 0.66; color: Qt.rgba(1, 1, 1, 0.5) }
+        GradientStop { position: 1;    color: Qt.rgba(0, 0, 1, 0.5) }
+    }
 
     function redrawLine() {
         for (let i = 0; i < root.count; i++) {
             let rect = root.model.get(i + root.offset)["point_" + root.propertyName]
             let pt = shape.mapFromItem(rect, rect.width / 2, rect.height / 2)
 
-            // console.log(i, offset, rect, pt.x, pt.y)
-
             path.pathElements[i].x = pt.x
             path.pathElements[i].y = pt.y
-
-            // console.log(path.pathElements[i].x, path.pathElements[i].y)
         }
     }
 
@@ -36,11 +35,7 @@ Item {
         id: gradient
         anchors.fill: parent
         visible: false
-        gradient: Gradient {
-            GradientStop { id: stop0; position: 0; color: "red" }
-            GradientStop { id: stop1; position: 0.5; color: "white" }
-            GradientStop { id: stop2; position: 1; color: "blue" }
-        }
+        gradient: root.gradientStops
     }
     Shapes.Shape {
         id: shape

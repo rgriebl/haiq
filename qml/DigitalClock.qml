@@ -85,8 +85,8 @@ Control {
         repeat: true
         onTriggered: {
             var d = new Date()
-            time.text = Qt.formatTime(d, root.showSeconds ? "hh:mm:ss" : "hh:mm")
-            date.text = Qt.formatDate(d, "dddd\nd. MMMM yyyy")
+            time.text = d.toLocaleTimeString(Qt.locale("de"), root.showSeconds ? "hh:mm:ss" : "hh:mm")
+            date.text = d.toLocaleDateString(Qt.locale("de"), "dddd\nd. MMMM yyyy")
 
             if (root.showSeconds)
                 interval = 1000 - d.getMilliseconds()
@@ -94,7 +94,14 @@ Control {
                 interval = 1000 * (60 - d.getSeconds())
         }
     }
+    Timer {
+        id: noSecondsTimer
+        interval: 15 * 60 * 1000 // 15min
+        onTriggered: root.showSeconds = false
+    }
+
     onShowSecondsChanged: {
         timer.interval = 1
+        noSecondsTimer.start()
     }
 }

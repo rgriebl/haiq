@@ -5,36 +5,27 @@ import QtQml
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Controls.Universal
 
 Tile {
     id: root
     required property var model
     required property int day
+    required property date datetime
     required property string condition
-    required property string temperature
-    required property string templow
+    required property real temperature
+    required property real templow
     required property real precipitation
     required property real precipitation_probability
 
-    headerText: (model.day === 0)
-                ? 'Heute'
-                : (model.day === 1)
-                  ? 'Morgen'
-                  : Qt.locale().dayName((_weekday + model.day) % 7)
-
-    property int _weekday
-
-    Timer {
-        interval: 1000 * 60 // every minute
-        repeat: true
-        running: true
-        triggeredOnStart: true
-        onTriggered: _weekday = new Date().getDay()
+    headerText: {
+        return Qt.locale("de").dayName(root.datetime.getDay())
     }
 
-    property real fontSize: root.font.pixelSize * 1.75
-    property FontMetrics fontMetrics: FontMetrics { font: root.font }
-    
+    function addUnit(value, unit) {
+        return value + '<font size="1">' + unit + '</font>'
+    }
+
     topInset: 3
     leftInset: 3
     rightInset: 3
@@ -59,24 +50,39 @@ Tile {
 
             horizontalAlignment: Text.AlignHCenter
 
-            temperature: Number(root.temperature)
-            font.pixelSize: root.fontSize
+            temperature: root.temperature
+            font.pixelSize: root.font.pixelSize * 1.75
         }
 
-        Item {
-            Tracer { }
+        Rectangle {
             Layout.verticalStretchFactor: 3 // should really be 1/2, but that results in 1/3
             Layout.fillHeight: true
             Layout.fillWidth: true
 
+            radius: 5
+            color: "transparent"
+            border.color: Qt.rgba(1, 1, 1, 0.1)
+
+            Repeater {
+                model: 5
+                Rectangle {
+                    required property int index
+                    x: 1
+                    width: parent.width - 2
+                    height: 1
+                    color: parent.color
+                    border.color: parent.border.color
+                    y: (index + 1) * 0.166 * parent.height
+                }
+            }
+
             Rectangle {
-                Tracer { }
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: 9
+                width: 11
                 height: width
                 radius: width / 2
                 color: "red"
-                y: parent.height / 2 - root.temperature * parent.height / 60
+                y: -width / 2 + parent.height * (root.temperature - 40) / -60 // [-20 .. +40]
 
                 Component.onCompleted: {
                     if (root.visible)
@@ -90,11 +96,11 @@ Tile {
             Rectangle {
                 Tracer { }
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: 9
+                width: 11
                 height: width
                 radius: width / 2
                 color: "blue"
-                y: parent.height / 2 - root.templow * parent.height / 60
+                y: -width / 2 + parent.height * (root.templow - 40) / -60 // [-20 .. +40]
 
                 Component.onCompleted: {
                     if (root.visible)
@@ -113,8 +119,8 @@ Tile {
 
             horizontalAlignment: Text.AlignHCenter
 
-            temperature: Number(root.templow)
-            font.pixelSize: root.fontSize
+            temperature: root.templow
+            font.pixelSize: root.font.pixelSize * 1.75
         }
         Rectangle {
             Layout.verticalStretchFactor: 2 // should really be 1/2, but that results in 1/3
@@ -122,7 +128,7 @@ Tile {
             Layout.fillWidth: true
 
             color: "transparent"
-            border.color: Qt.rgba(0,0,1,0.7)
+            border.color: { let c = Universal.accent; return Qt.rgba(c.r, c.g, c.b, 0.2) }
             border.width: 2
             radius: 5
 
@@ -130,8 +136,8 @@ Tile {
                 width: parent.width
                 anchors.bottom: parent.bottom
                 height: parent.height / 100 * root.precipitation
-                color: "blue"
-                radius: 5
+                color: Universal.accent
+                radius: parent.radius
             }
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -139,7 +145,7 @@ Tile {
                 height: width
                 radius: width / 2
                 color: "white"
-                y: (100 - root.precipitation_probability) * parent.height / 100
+                y: -width / 2 + (100 - root.precipitation_probability) * parent.height / 100
 
                 Component.onCompleted: {
                     if (root.visible)
@@ -157,7 +163,7 @@ Tile {
 
             horizontalAlignment: Text.AlignHCenter
 
-            text: root.precipitation ? (root.precipitation + "l") : "-"
+            text: root.precipitation ? addUnit(root.precipitation, "l") : "-"
             font.pixelSize: root.font.pixelSize
             opacity: root.precipitation_probability / 100
         }

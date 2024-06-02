@@ -5,9 +5,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Universal
 
-Pane {
+Page {
     id: root
-    property alias headerText: header.text
+    property alias headerText: headerLabel.text
     property color headerColor: {
         let col = Universal.accent
         let luma = 0.3 * col.r + 0.59 * col.g + 0.11 * col.b
@@ -15,62 +15,46 @@ Pane {
     }
     property alias headerStatusText: headerStatus.text
 
-
-    padding: 0
-
     background: Rectangle {
         anchors.fill: parent
         radius: root.font.pixelSize / 1.5
         color: Universal.background
     }
 
-    default property alias content: content.data
-
-    Label {
-        id: header
+    header: Label {
+        id: headerLabel
         width: parent.width
         font.bold: true
         font.pixelSize: root.font.pixelSize / 3 * 2
         horizontalAlignment: Text.AlignHCenter
-        anchors.top: parent.top
         color: root.headerColor
-    }
-    Label {
-        id: headerStatus
-        color: root.headerColor
-        width: parent.width
-        height: header.height
-        font.bold: false
-        font.pixelSize: root.font.pixelSize / 2
-        horizontalAlignment: Text.AlignRight
-        verticalAlignment: Text.AlignVCenter
-        rightPadding: height / 2
-        anchors.top: parent.top
-    }
-    Rectangle {
-        anchors.top: header.bottom
-        anchors.topMargin: 3
-        width: parent.width
-        height: 1
-        gradient: Gradient {
-            orientation: Qt.Horizontal
-            GradientStop { position:   0; color: Universal.background }
-            GradientStop { position: 0.5; color: root.headerColor }
-            GradientStop { position:   1; color: Universal.background }
-        }
-    }
+        bottomPadding: 4
 
-    Item {
-        id: content
-        anchors {
-            top: header.bottom
-            topMargin: 8
-            left: parent.left
-            leftMargin: 5
-            right: parent.right
-            rightMargin: 5
-            bottom: parent.bottom
-            bottomMargin: 5
+        Label {
+            id: headerStatus
+            color: root.headerColor
+            anchors.fill: parent
+            anchors.rightMargin: height / 2
+            font.bold: false
+            font.pixelSize: root.font.pixelSize / 2
+            horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
+        }
+        Rectangle {
+            anchors.top: header.bottom
+            anchors.topMargin: -3
+            width: parent.width
+            height: 1
+            gradient: Gradient {
+                orientation: Qt.Horizontal
+                GradientStop { position:   0; color: Universal.background }
+                GradientStop { position: 0.5; color: root.headerColor }
+                GradientStop { position:   1; color: Universal.background }
+            }
         }
     }
+    topPadding: 8
+    leftPadding: 5
+    rightPadding: 5
+    bottomPadding: 5
 }

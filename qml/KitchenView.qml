@@ -19,7 +19,7 @@ TabletView {
 
     font.family: "Noto Sans"
     font.bold: true
-    font.pixelSize: height / 32
+    font.pixelSize: height / 36
 
     property real defaultRowSpacing: font.pixelSize / 2
     property real defaultColumnSpacing: font.pixelSize / 4
@@ -32,65 +32,61 @@ TabletView {
         Behavior on opacity { NumberAnimation { duration: 200 } }
     }
 
-    property int backToHomeScreen: 60 // min
-
-    function showTimer() {
-        alarmButton.checked = true
-    }
+    property int backToHomeScreen: 15 // min
 
     function showWeather() {
         weatherButton.checked = true
     }
 
-    property int nightTimeStart: 23
-    property int nightTimeEnd: 6
-    property bool nightTime: false
+    // property int nightTimeStart: 23
+    // property int nightTimeEnd: 6
+    // property bool nightTime: false
 
-    Timer {
-        running: true
-        repeat: true
-        interval: 1000 * 60 * 1 // every min
-        onTriggered: {
-            let now = new Date()
-            nightTime = (now.getHours() >= nightTimeStart || now.getHours() < nightTimeEnd)
-        }
-    }
+    // Timer {
+    //     running: true
+    //     repeat: true
+    //     interval: 1000 * 60 * 1 // every min
+    //     onTriggered: {
+    //         let now = new Date()
+    //         nightTime = (now.getHours() >= nightTimeStart || now.getHours() < nightTimeEnd)
+    //     }
+    // }
 
-    onNightTimeChanged: {
-        if (nightTime)
-            ScreenBrightness.blankTimeout = 120
-        else if (ScreenBrightness.blank)
-            ScreenBrightness.blankTimeout = 0
-    }
+    // onNightTimeChanged: {
+    //     if (nightTime)
+    //         ScreenBrightness.blankTimeout = 120
+    //     else if (ScreenBrightness.blank)
+    //         ScreenBrightness.blankTimeout = 0
+    // }
 
     Component.onCompleted: {
         drawer.dragMargin = 50
 
-    drawer.items.insert(0, {
-            text: "Nachts ausschalten",
-            iconName: "",
-            action: function() { }
-        })
+        // drawer.items.insert(0, {
+        //     text: "Nachts ausschalten",
+        //     iconName: "",
+        //     action: function() { }
+        // })
 
-        ScreenBrightness.brightness = 1
-        ScreenBrightness.normalBrightness = 1
-        ScreenBrightness.dimBrightness = 1
+        // ScreenBrightness.brightness = 1
+        // ScreenBrightness.normalBrightness = 1
+        // ScreenBrightness.dimBrightness = 1
 
-        ScreenBrightness.screenSaverActive = true
+        // ScreenBrightness.screenSaverActive = true
 
-        HomeAssistant.subscribe("sun.sun", function(state, attributes) {
-            var light = Math.min(Math.max(attributes.elevation / 45, 0), 1)
-            var factor = light * 0.8 + 0.2
+        // HomeAssistant.subscribe("sun.sun", function(state, attributes) {
+        //     var light = Math.min(Math.max(attributes.elevation / 45, 0), 1)
+        //     var factor = light * 0.8 + 0.2
 
-            console.warn("Light: " + light + " -- setting new factor: " + factor)
+        //     console.warn("Light: " + light + " -- setting new factor: " + factor)
 
-            if (!nightTime)
-                ScreenBrightness.normalBrightness = factor
-        })
-        HomeAssistant.subscribe("group.irgendwer", function(state, attributes) {
-            if (!nightTime)
-                ScreenBrightness.blankTimeout = (state === "not_home") ? 120 : 0;
-        })
+        //     if (!nightTime)
+        //         ScreenBrightness.normalBrightness = factor
+        // })
+        // HomeAssistant.subscribe("group.irgendwer", function(state, attributes) {
+        //     if (!nightTime)
+        //         ScreenBrightness.blankTimeout = (state === "not_home") ? 120 : 0;
+        // })
     }
 
     InputPanel {

@@ -32,12 +32,6 @@ Pane {
     readonly property real hourSlice: width / 23.5
     readonly property real daySlice: width / days
 
-    function addUnit(item, str, unit) {
-        var html = '<span>' + str + '</span>'
-                + '<span style="font-size: ' + item.font.pixelSize / 2 + 'px;"> ' + unit + '</span>'
-        return html
-    }
-
     Component  {
         id: pcurve
         PathCurve { }
@@ -46,7 +40,7 @@ Pane {
     SwipeView {
         id: swipe
         anchors.fill: parent
-        orientation: Qt.Vertical
+        orientation: Qt.Horizontal
         clip: true
 
         Item {
@@ -68,6 +62,7 @@ Pane {
                 count: root.days
                 offset: 0
                 propertyName: "temperature"
+                strokeWidth: 3
             }
             CurveLine {
                 id: tempLowCurve
@@ -77,6 +72,7 @@ Pane {
                 count: root.days
                 offset: 0
                 propertyName: "templow"
+                strokeWidth: 3
             }
             CurveLine {
                 id: precipDayCurve
@@ -87,9 +83,10 @@ Pane {
                 count: root.days
                 offset: 0
                 propertyName: "precipitation_probability"
-                color0: "white"
-                color1: Qt.rgba(1,1,1,0.5)
-                color2: Qt.rgba(1,1,1,0)
+                gradientStops: Gradient {
+                    GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 0.5) }
+                    GradientStop { position: 1; color: Qt.rgba(1, 1, 1, 0)   }
+                }
             }
         }
 
@@ -128,9 +125,10 @@ Pane {
                     count: root.hours / 2
                     offset: 0
                     propertyName: "precipitation_probability"
-                    color0: "white"
-                    color1: Qt.rgba(1,1,1,0.5)
-                    color2: Qt.rgba(1,1,1,0)
+                    gradientStops: Gradient {
+                        GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 0.5) }
+                        GradientStop { position: 1; color: Qt.rgba(1, 1, 1, 0)   }
+                    }
                 }
             }
             Item {
@@ -167,24 +165,42 @@ Pane {
                     count: root.hours / 2
                     offset: (root.hours / 2)
                     propertyName: "precipitation_probability"
-                    color0: "white"
-                    color1: Qt.rgba(1,1,1,0.5)
-                    color2: Qt.rgba(1,1,1,0)
+                    gradientStops: Gradient {
+                        GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 0.5) }
+                        GradientStop { position: 1; color: Qt.rgba(1, 1, 1, 0)   }
+                    }
                 }
             }
         }
     }
 
-    // Label {
-    //     id: indicator
-    //     opacity: 0.8
+    Label {
+        id: indicator
+        opacity: 0.8
 
-    //     text: swipe.currentIndex === 0 ? "v Stündliche Vorhersage v"
-    //                                    : "^ Tägliche Vorhersage ^"
+        text: swipe.currentIndex === 0 ? "<< Stündliche Vorhersage <<"
+                                       : ">> Tägliche Vorhersage >>"
 
-    //     anchors.bottom: swipe.bottom
-    //     anchors.horizontalCenter: parent.horizontalCenter
-    // }
+        anchors.bottom: swipe.bottom
+        anchors.horizontalCenter: swipe.horizontalCenter
+
+        Connections {
+            target: swipe
+            function onCurrentIndexChanged() { indicator.flash() }
+        }
+        Component.onCompleted: flash()
+
+        function flash() {
+            visible = true
+            hideTimer.start()
+        }
+        Timer {
+            id: hideTimer
+            interval: 2000
+            onTriggered: indicator.visible = false
+        }
+    }
+    SwipeView.onIsCurrentItemChanged: if (SwipeView.isCurrentItem) indicator.flash()
 
     function updateLines() {
         tempCurve.redrawLine()
@@ -197,25 +213,24 @@ Pane {
     }
 
     Component.onCompleted: {
+        const daily_conditions = [
+                                   'datetime',
+                                   'condition',
+                                   'temperature',
+                                   'templow',
+                                   'precipitation',
+                                   'precipitation_probability',
+                                   'wind_speed',
+                               ]
 
-        var daily_conditions = [
-                    'condition',
-                    'temperature',
-                    'templow',
-                    'precipitation',
-                    'precipitation_probability',
-                    'wind_speed',
-                ]
-
-        var hourly_conditions = [
-                    'condition',
-                    'temperature',
-                    'precipitation',
-                    'precipitation_probability',
-                    'wind_speed',
-                ]
-
-
+        const hourly_conditions = [
+                                    'datetime',
+                                    'condition',
+                                    'temperature',
+                                    'precipitation',
+                                    'precipitation_probability',
+                                    'wind_speed',
+                                ]
 
         // daily
         for (let d = 0; d < days; ++d) {
@@ -234,6 +249,7 @@ Pane {
                 for (let condition of daily_conditions)
                     dailyWeatherModel.setProperty(d, condition, attributes.forecast[d][condition])
             }
+            Qt.callLater(updateLines)
         })
 
         // hourly

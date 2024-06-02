@@ -14,19 +14,36 @@ Pane {
     //padding: 0
     background: null
 
-    GridLayout {
+    Item {
         id: grid
         anchors.fill: parent
-        columns: 3
-        rows: 5
-        rowSpacing: 7
-        columnSpacing: 7
+        property int columns: 3
+        property int rows: 5
+        property int rowSpacing: 7
+        property int columnSpacing: 7
 
-        function preferredTileWidth(tile) {
-            return (grid.width - (grid.columns - 1) * grid.columnSpacing) / grid.columns * tile.Layout.columnSpan + (tile.Layout.columnSpan - 1) * grid.columnSpacing
-        }
-        function preferredTileHeight(tile) {
-            return (grid.height - (grid.rows - 1) * grid.rowSpacing) / grid.rows * tile.Layout.rowSpan + (tile.Layout.rowSpan - 1) * grid.rowSpacing
+        onWidthChanged: updatePositions()
+        onHeightChanged: updatePositions()
+        onChildrenChanged: updatePositions()
+        Component.onCompleted: updatePositions()
+
+        function updatePositions() {
+            for (let i = 0; i < grid.children.length; ++i) {
+                let c = grid.children[i]
+
+                let colw = (grid.width - (grid.columns - 1) * grid.columnSpacing) / grid.columns
+                let rowh = (grid.height - (grid.rows - 1) * grid.rowSpacing) / grid.rows
+
+                let x = (colw + grid.columnSpacing) * c.Layout.column
+                let y = (rowh + grid.rowSpacing) * c.Layout.row
+                let w = colw * c.Layout.columnSpan + ((c.Layout.columnSpan ?? 1) - 1) * grid.columnSpacing
+                let h = rowh * c.Layout.rowSpan + ((c.Layout.rowSpan ?? 1) - 1) * grid.rowSpacing
+
+                c.x = x
+                c.y = y
+                c.width = w
+                c.height = h
+            }
         }
 
         Tile {
@@ -35,8 +52,6 @@ Pane {
             Layout.row: 0
             Layout.column: 0
             Layout.rowSpan: 2
-            Layout.preferredWidth: grid.preferredTileWidth(this)
-            Layout.preferredHeight: grid.preferredTileHeight(this) * .95
 
             TrainDepartures {
                 id: trainDepartures
@@ -50,8 +65,6 @@ Pane {
 
             Layout.row: 2
             Layout.column: 0
-            Layout.preferredWidth: grid.preferredTileWidth(this)
-            Layout.preferredHeight: grid.preferredTileHeight(this) * 1.1
 
             HereMapsDistance {
                 id: distance
@@ -74,8 +87,6 @@ Pane {
 
             Layout.row: 3
             Layout.column: 0
-            Layout.preferredWidth: grid.preferredTileWidth(this)
-            Layout.preferredHeight: grid.preferredTileHeight(this)
 
             RowLayout {
                 spacing: 0
@@ -110,21 +121,18 @@ Pane {
 
             Layout.row: 4
             Layout.column: 0
-            Layout.preferredWidth: grid.preferredTileWidth(this)
-            Layout.preferredHeight: grid.preferredTileHeight(this)
 
             KitchenMail {
                 anchors.fill: parent
             }
         }
+
         Tile {
             headerText: "Radio"
 
             Layout.row: 0
             Layout.column: 1
             Layout.rowSpan: 3
-            Layout.preferredWidth: grid.preferredTileWidth(this)
-            Layout.preferredHeight: grid.preferredTileHeight(this)
 
             SqueezeBoxRadio {
                 id: sbRadio
@@ -139,15 +147,14 @@ Pane {
             Layout.row: 3
             Layout.rowSpan: 2
             Layout.column: 1
-            Layout.preferredWidth: grid.preferredTileWidth(this)
-            Layout.preferredHeight: grid.preferredTileHeight(this)
 
-            Control {
+            Item {
                 id: weatherRow
                 anchors.fill: parent
 
                 property string location: "osterseeon"
-                spacing: font.pixelSize / 2
+                //spacing: font.pixelSize / 2
+                property alias font: root.font
 
                 MouseArea {
                     anchors.fill: parent
@@ -217,14 +224,13 @@ Pane {
                 }
             }
         }
+
         Tile {
             headerText: "Termine"
 
             Layout.row: 0
             Layout.column: 2
             Layout.rowSpan: 3
-            Layout.preferredWidth: grid.preferredTileWidth(this)
-            Layout.preferredHeight: grid.preferredTileHeight(this)
 
             CalendarEvents {
                 anchors.fill: parent
@@ -236,8 +242,6 @@ Pane {
             Layout.row: 3
             Layout.column: 2
             Layout.rowSpan: 2
-            Layout.preferredWidth: grid.preferredTileWidth(this)
-            Layout.preferredHeight: grid.preferredTileHeight(this)
 
             DigitalClock {
                 id: clock
@@ -248,7 +252,6 @@ Pane {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: clock.showSeconds = !clock.showSeconds
-                    onPressAndHold: parent.Window.window.showTimer()
                 }
             }
         }
