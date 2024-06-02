@@ -8,8 +8,8 @@ HomeAssistant interface for Qt.
 
 ## License
 
-HAiQ is copyrighted &copy;2017-2022 by Robert Griebl, licensed under the
-[GNU General Public License (GPL) version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html).
+HAiQ is copyrighted &copy;2017-2024 by Robert Griebl, licensed under the
+[GNU General Public License (GPL) version 3](https://www.gnu.org/licenses/gpl-3.0.html).
 All trademarks recognized.
 
 ## 3rd-Party Components
