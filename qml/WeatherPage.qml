@@ -17,6 +17,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import org.griebl.haiq 1.0
+import QtQuick.Shapes as Shapes
+import Qt5Compat.GraphicalEffects
 
 
 Pane {
@@ -34,10 +36,21 @@ Pane {
         dynamicRoles: true
     }
 
+    readonly property int days: 9
+    readonly property int hours: 48
+
+    readonly property real hourSlice: width / 23.5
+    readonly property real daySlice: width / days
+
     function addUnit(item, str, unit) {
         var html = '<span>' + str + '</span>'
                 + '<span style="font-size: ' + item.font.pixelSize / 2 + 'px;"> ' + unit + '</span>'
         return html
+    }
+
+    Component  {
+        id: pcurve
+        PathCurve { }
     }
 
     SwipeView {
@@ -46,41 +59,152 @@ Pane {
         orientation: Qt.Vertical
         clip: true
 
-        ListView {
-            id: dailyList
-            orientation: ListView.Horizontal
-            interactive: false
-            spacing: 3
+        Item {
+            Repeater {
+                model: dailyWeatherModel
+                delegate: WeatherDailyDelegate {
+                    required property int index
 
-            model: dailyWeatherModel
-            delegate: WeatherDailyDelegate { }
+                    height: parent.height
+                    x: index * parent.width / root.days + 1
+                    width: parent.width / root.days - 2
+                }
+            }
+            CurveLine {
+                id: tempHighCurve
+                anchors.fill: parent
+                z: 2
+                model: dailyWeatherModel
+                count: root.days
+                offset: 0
+                propertyName: "temperature"
+            }
+            CurveLine {
+                id: tempLowCurve
+                anchors.fill: parent
+                z: 2
+                model: dailyWeatherModel
+                count: root.days
+                offset: 0
+                propertyName: "templow"
+            }
+            CurveLine {
+                id: precipDayCurve
+                anchors.fill: parent
+                z: 2
+                strokeWidth: 3
+                model: dailyWeatherModel
+                count: root.days
+                offset: 0
+                propertyName: "precipitation_probability"
+                color0: "white"
+                color1: Qt.rgba(1,1,1,0.5)
+                color2: Qt.rgba(1,1,1,0)
+            }
         }
 
+        Item {
+            Item {
+                width: parent.width
+                height: parent.height / 2 - 3
 
-        ListView {
-            id: hourly
-            orientation: ListView.Horizontal
-            spacing: 3
-            interactive: true
+                Repeater {
+                    model: hourlyWeatherModel
+                    delegate: WeatherHourlyDelegate {
+                        required property int index
 
-            model: hourlyWeatherModel
-            delegate: WeatherHourlyDelegate { }
+                        height: parent.height
+                        x: index * parent.width / (root.hours / 2) + 1
+                        width: visible ? parent.width / (root.hours / 2) - 2 : 0
+                        visible: index < (root.hours / 2)
+                    }
+                }
+
+                CurveLine {
+                    id: tempCurve
+                    anchors.fill: parent
+                    z: 2
+                    model: hourlyWeatherModel
+                    count: root.hours / 2
+                    offset: 0
+                    propertyName: "temperature"
+                }
+                CurveLine {
+                    id: precipCurve
+                    anchors.fill: parent
+                    z: 2
+                    strokeWidth: 3
+                    model: hourlyWeatherModel
+                    count: root.hours / 2
+                    offset: 0
+                    propertyName: "precipitation_probability"
+                    color0: "white"
+                    color1: Qt.rgba(1,1,1,0.5)
+                    color2: Qt.rgba(1,1,1,0)
+                }
+            }
+            Item {
+                width: parent.width
+                height: parent.height / 2 - 3
+                y: height + 6
+
+                Repeater {
+                    model: hourlyWeatherModel
+                    delegate: WeatherHourlyDelegate {
+                        required property int index
+
+                        height: parent.height
+                        x: (index - (root.hours / 2)) * parent.width / (root.hours / 2) + 1
+                        width: visible ? parent.width / (root.hours / 2) - 2 : 0
+                        visible: index >= (root.hours / 2)
+                    }
+                }
+                CurveLine {
+                    id: tempCurve2
+                    anchors.fill: parent
+                    z: 2
+                    model: hourlyWeatherModel
+                    count: root.hours / 2
+                    offset: (root.hours / 2)
+                    propertyName: "temperature"
+                }
+                CurveLine {
+                    id: precipCurve2
+                    anchors.fill: parent
+                    z: 2
+                    strokeWidth: 3
+                    model: hourlyWeatherModel
+                    count: root.hours / 2
+                    offset: (root.hours / 2)
+                    propertyName: "precipitation_probability"
+                    color0: "white"
+                    color1: Qt.rgba(1,1,1,0.5)
+                    color2: Qt.rgba(1,1,1,0)
+                }
+            }
         }
     }
 
-    Label {
-        id: indicator
-        opacity: 0.8
+    // Label {
+    //     id: indicator
+    //     opacity: 0.8
 
-        text: swipe.currentIndex == 0 ? "v Stündliche Vorhersage v"
-                                      : "^ Tägliche Vorhersage ^"
+    //     text: swipe.currentIndex === 0 ? "v Stündliche Vorhersage v"
+    //                                    : "^ Tägliche Vorhersage ^"
 
-        anchors.bottom: swipe.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
+    //     anchors.bottom: swipe.bottom
+    //     anchors.horizontalCenter: parent.horizontalCenter
+    // }
+
+    function updateLines() {
+        tempCurve.redrawLine()
+        tempCurve2.redrawLine()
+        precipCurve.redrawLine()
+        precipCurve2.redrawLine()
+        tempHighCurve.redrawLine()
+        tempLowCurve.redrawLine()
+        precipDayCurve.redrawLine()
     }
-
-    readonly property int days: 8
-    readonly property int hours: 48
 
     Component.onCompleted: {
 
@@ -94,7 +218,7 @@ Pane {
                 ]
 
         var hourly_conditions = [
-                    'weather',
+                    'condition',
                     'temperature',
                     'precipitation',
                     'precipitation_probability',
@@ -104,35 +228,42 @@ Pane {
 
 
         // daily
-        for (let d = 0; d <= days; ++d) {
-            let properties = { 'day': d }
-            for (let condition of daily_conditions) {
-                properties[condition] = '' // init model with dummy value
+        for (let d = 0; d < days; ++d) {
+            let properties = {
+                'day': d,
+                'point_temperature': null,
+                'point_templow': null,
+                'point_precipitation_probability': null
             }
+            for (let condition of daily_conditions)
+                properties[condition] = '' // init model with dummy value
             dailyWeatherModel.insert(d, properties)
         }
-        HomeAssistant.subscribe("weather.dwd_weather_" + root.location, function(state, attributes) {
+        HomeAssistant.subscribe("sensor.weather_forecast_daily", function(state, attributes) {
             for (let d = 0; d < days; ++d) {
-                for (let condition of daily_conditions) {
+                for (let condition of daily_conditions)
                     dailyWeatherModel.setProperty(d, condition, attributes.forecast[d][condition])
-                }
             }
         })
 
         // hourly
-        let properties = { }
-        for (let condition of hourly_conditions) {
-            properties[condition] = '' // init model with dummy value
-
-            HomeAssistant.subscribe("sensor." + condition + "_" + root.location, function(state, attributes) {
-                for (let h = 0; h <= hours; ++h) {
-                    hourlyWeatherModel.setProperty(h, condition, attributes.data[h].value)
-                }
-            })
-        }
-        for (let h = 0; h <= hours; ++h) {
-            properties['hour'] = h
+        for (let h = 0; h < root.hours; ++h) {
+            let properties = {
+                'hour': h,
+                'point_temperature': null,
+                'point_precipitation_probability': null
+            }
+            for (let condition of hourly_conditions)
+                properties[condition] = '' // init model with dummy value
             hourlyWeatherModel.insert(h, properties)
         }
+
+        HomeAssistant.subscribe("sensor.weather_forecast_hourly", function(state, attributes) {
+            for (let h = 0; h < root.hours; ++h) {
+                for (let condition of hourly_conditions)
+                    hourlyWeatherModel.setProperty(h, condition, attributes.forecast[h][condition])
+            }
+            Qt.callLater(updateLines)
+        })
     }
 }

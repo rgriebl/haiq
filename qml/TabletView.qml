@@ -11,12 +11,12 @@
 **
 ** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
 */
+import QtCore
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Controls.Universal
 import QtQuick.Layouts
-import Qt.labs.settings
 import org.griebl.haiq 1.0
 
 

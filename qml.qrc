@@ -58,5 +58,6 @@
         <file>qml/WebToolButton.qml</file>
         <file>qml/TemperatureProbe.qml</file>
         <file>qml/HomeAssistantPage.qml</file>
+        <file>qml/CurveLine.qml</file>
     </qresource>
 </RCC>

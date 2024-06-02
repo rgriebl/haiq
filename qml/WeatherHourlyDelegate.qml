@@ -15,25 +15,20 @@ import QtQml
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Window
-
 
 Tile {
-    id: delegate
+    id: root
+    required property var model
+    required property int hour
+    required property string condition
+    required property string temperature
+    required property real precipitation
+    required property real precipitation_probability
+
 
     headerText: {
-        if (model.hour === 0) {
-            return 'Jetzt'
-        } else {
-            let d = new Date()
-            d.setHours(d.getHours() + model.hour)
-            let prefix = (_currentHour + model.hour) < 24
-                ? 'Heute'
-                : (_currentHour + model.hour) < 48
-                  ? 'Morgen'
-                  : 'Übermorgen'
-            return prefix + Qt.formatTime(d, ", h 'Uhr'")
-        }
+        let d = new Date()
+        return ('0' + ((d.getHours() + root.hour) % 24)).slice(-2)
     }
 
     property int _currentHour
@@ -46,109 +41,107 @@ Tile {
         onTriggered: _currentHour = new Date().getHours()
     }
     
-    property real fontSize: delegate.font.pixelSize
-    property FontMetrics fontMetrics: FontMetrics { font: delegate.font }
+    property real fontSize: root.font.pixelSize
+    property FontMetrics fontMetrics: FontMetrics { font: root.font }
     
     topInset: 3
     leftInset: 3
     rightInset: 3
     bottomInset: 3
     padding: 3
-    width: ListView.view.width / 7.5
-    height: ListView.view.height
     
-    Item {
-        id: hcolumn
+    ColumnLayout {
         anchors.fill: parent
-        
+
         SvgIcon {
-            id: wicon
-            anchors.top: hcolumn.top
-            anchors.margins: hcolumn.width / 20
-            
-            name: "darksky/" + model.weather
-            size: hcolumn.width
+            Layout.fillWidth: true
+
+            Tracer { }
+
+            name: "darksky/" + root.condition
+            size: width
         }
-        
-        WeatherTemperatureLabel {
-            id: temp
-            anchors.top: wicon.bottom
-            anchors.left: tempIcon.right
-            anchors.right: hcolumn.right
-            
-            font.pixelSize: delegate.fontSize * 2
-            padding: 0
-            
-            temperature: Number(model.temperature)
-        }
-        SvgIcon {
-            id: tempIcon
-            icon: 'mdi/thermometer'
-            anchors.verticalCenter: temp.verticalCenter
-            size: delegate.fontSize * 2
-        }
-        
+
         Label {
-            id: rainProbability
-            anchors.top: temp.bottom
-            anchors.topMargin: delegate.fontSize
-            anchors.horizontalCenter: rainBar.horizontalCenter
-            font.pixelSize: delegate.fontSize * 2
-            padding: 0
-            
-            property int percent: Math.round(model.precipitation_probability)
-            
-            text: percent ? root.addUnit(this, percent, '%') : '-'
-            textFormat: Qt.RichText
-        }
-        SvgIcon {
-            id: rainIcon
-            icon: 'darksky/rainy'
-            anchors.verticalCenter: rainProbability.bottom
-            size: delegate.fontSize * 2
-        }
-        Rectangle {
-            id: rainBar
-            anchors.verticalCenter: rainProbability.bottom
-            anchors.right: hcolumn.right
-            anchors.left: rainIcon.right
-            height: 1
-            color: rainProbability.color
-        }
-        Label {
-            id: rainIntensity
-            anchors.top: rainProbability.bottom
-            anchors.horizontalCenter: rainBar.horizontalCenter
-            font.pixelSize: delegate.fontSize * 2
-            padding: 0
-            
-            property int mm: Math.round(model.precipitation_probability)
-            
-            text: (rainProbability.percent <= 0 || mm <= 0) ? '-' : root.addUnit(this, mm, 'mm')
-            textFormat: Qt.RichText
-        }
-        
-        Label {
-            id: wind
-            anchors.top: rainIntensity.bottom
-            anchors.topMargin: delegate.fontSize
-            anchors.left: windIcon.right
-            anchors.right: hcolumn.right
-            
+            Tracer { }
+            Layout.fillWidth: true
+
             horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: delegate.fontSize * 2
-            
-            property int speed: Math.round(model.wind_speed)
-            
-            text: speed ? root.addUnit(this, speed, 'm/s') : ''
-            textFormat: Qt.RichText
+
+            text: root.temperature + "°"
+            font.pixelSize: root.font.pixelSize
         }
-        SvgIcon {
-            id: windIcon
-            icon: 'darksky/windy'
-            anchors.verticalCenter: wind.verticalCenter
-            size: delegate.fontSize * 2
+
+        Item {
+            Tracer { }
+            Layout.verticalStretchFactor: 3 // should really be 1/2, but that results in 1/3
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            Rectangle {
+                Tracer { }
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 9
+                height: width
+                radius: width / 2
+                color: "red"
+                y: parent.height / 2 - root.temperature * parent.height / 60
+
+                Component.onCompleted: {
+                    if (root.visible)
+                        root.model.point_temperature = this
+                }
+                Component.onDestruction:  {
+                    if (root.visible && root.model.point_temperature === this)
+                        root.model.point_temperature = null
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.verticalStretchFactor: 2 // should really be 1/2, but that results in 1/3
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            color: "transparent"
+            border.color: Qt.rgba(0,0,1,0.7)
+            border.width: 2
+            radius: 5
+
+            Rectangle {
+                width: parent.width
+                anchors.bottom: parent.bottom
+                height: parent.height / 100 * 24 * root.precipitation
+                color: "blue"
+                radius: 5
+            }
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 9
+                height: width
+                radius: width / 2
+                color: "white"
+                y: (100 - root.precipitation_probability) * parent.height / 100
+
+                Component.onCompleted: {
+                    if (root.visible)
+                        root.model.point_precipitation_probability = this
+                }
+                Component.onDestruction:  {
+                    if (root.visible && root.model.point_precipitation_probability === this)
+                        root.model.point_precipitation_probability = null
+                }
+            }
+        }
+        Label {
+            Tracer { }
+            Layout.fillWidth: true
+
+            horizontalAlignment: Text.AlignHCenter
+
+            text: root.precipitation ? (root.precipitation + "l") : "-"
+            font.pixelSize: root.font.pixelSize
+            opacity: root.precipitation_probability / 100
         }
     }
-    
 }

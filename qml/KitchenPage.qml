@@ -165,12 +165,12 @@ Pane {
                 }
 
                 Component.onCompleted: {
-                    HomeAssistant.subscribe("weather.dwd_weather_" + location, function(state, attributes) {
+                    HomeAssistant.subscribe("weather." + location, function(state, attributes) {
                         weatherIcon.name = "darksky/" + state
                         weatherTemp.temperature = attributes.temperature
                         weatherTemp.temperatureFeelsLike = weatherTemp.temperature
                     })
-                    HomeAssistant.subscribe("sensor.weather_report_" + location, function(state, attributes) {
+                    HomeAssistant.subscribe("sensor." + location + "_weather_report", function(state, attributes) {
                         let lines = attributes.data.split('\n')
                         for (let line of lines) {
                             let s = ''

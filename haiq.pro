@@ -143,7 +143,7 @@ win32 {
     !system(where /Q $$ISCC) {
       INNO_PATH=$$(INNO_SETUP_PATH)
       !exists("$$INNO_PATH\\$$ISCC") {
-        INNO_PATH="$$getenv(ProgramFiles(x86))\\Inno Setup 6"
+        INNO_PATH="$$getenv(LOCALAPPDATA)\\Programs\\Inno Setup 6"
         !exists("$$INNO_PATH\\$$ISCC"):error("Please set %INNO_SETUP_PATH% to point to the directory containing the '$$ISCC' binary.")
       }
       ISCC="$$INNO_PATH\\$$ISCC"
