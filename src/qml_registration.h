@@ -87,3 +87,26 @@ public:
     }
 };
 
+class ForeignSqueezeBoxPlayer
+{
+    Q_GADGET
+    QML_FOREIGN(SqueezeBoxPlayer)
+    QML_NAMED_ELEMENT(SqueezeBoxPlayer)
+    QML_UNCREATABLE("")
+};
+
+class ForeignListOfSqueezeBoxPlayer
+{
+    Q_GADGET
+    QML_FOREIGN(QList<SqueezeBoxPlayer *>)
+    QML_ANONYMOUS
+    QML_SEQUENTIAL_CONTAINER(SqueezeBoxPlayer *)
+};
+
+class ForeignSqueezeBoxAlarm
+{
+    Q_GADGET
+    QML_FOREIGN(SqueezeBoxAlarm)
+    QML_NAMED_ELEMENT(SqueezeBoxAlarm)
+    QML_UNCREATABLE("")
+};

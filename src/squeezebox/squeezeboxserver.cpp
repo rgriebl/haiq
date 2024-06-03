@@ -454,16 +454,12 @@ QPair<StringMap, QVector<StringMap>> SqueezeBoxServer::parseExtendedResult(const
     return qMakePair(global, objects);
 }
 
-QList<QObject *> SqueezeBoxServer::players() const
+QList<SqueezeBoxPlayer *> SqueezeBoxServer::players() const
 {
-    QObjectList players;
-    players.reserve(m_players.size());
-    for (const auto &player : m_players)
-        players << player;
-    return players;
+    return m_players.values();
 }
 
-QObject *SqueezeBoxServer::thisPlayer()
+SqueezeBoxPlayer *SqueezeBoxServer::thisPlayer()
 {
     return m_thisPlayer;
 }
@@ -631,7 +627,7 @@ void SqueezeBoxPlayer::updateNextAlarm()
 {
     QDateTime next;
 
-    for (const SqueezeBoxAlarm *alarm : qAsConst(m_alarms)) {
+    for (const SqueezeBoxAlarm *alarm : std::as_const(m_alarms)) {
         if (alarm->enabled()) {
             QDate whenDate = QDate::currentDate();
             auto whenTime = QTime(0, 0).addSecs(alarm->time());

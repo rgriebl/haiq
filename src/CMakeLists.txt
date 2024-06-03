@@ -77,12 +77,15 @@ target_link_libraries(haiq_module PUBLIC
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
-    Qt6::Widgets
     Qt6::WebSockets
 )
 
 if (MODELTEST)
     target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Test)
+endif()
+
+if (HAIQ_DESKTOP)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE haiq_module ui_module)

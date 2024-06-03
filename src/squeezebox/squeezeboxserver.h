@@ -150,8 +150,8 @@ private:
 class SqueezeBoxServer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<QObject *> players READ players NOTIFY playersChanged)
-    Q_PROPERTY(QObject * thisPlayer READ thisPlayer NOTIFY thisPlayerChanged)
+    Q_PROPERTY(QList<SqueezeBoxPlayer *> players READ players NOTIFY playersChanged)
+    Q_PROPERTY(SqueezeBoxPlayer * thisPlayer READ thisPlayer NOTIFY thisPlayerChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
 
 public:
@@ -168,8 +168,8 @@ public:
 
     static QPair<StringMap, QVector<StringMap>> parseExtendedResult(const QStringList &result, const QString &separatorTag);
 
-    QList<QObject *> players() const;
-    QObject *thisPlayer();
+    QList<SqueezeBoxPlayer *> players() const;
+    SqueezeBoxPlayer *thisPlayer();
 
     bool connected() const;
 

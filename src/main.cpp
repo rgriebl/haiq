@@ -10,6 +10,7 @@
 #include <QQuickWindow>
 #include <QQuickItem>
 #include <QDir>
+#include <QDirIterator>
 #include <QFileSelector>
 #include <QQmlFileSelector>
 #include <QTimer>
@@ -48,7 +49,6 @@ enum MessageType { UsageMessage, ErrorMessage };
 #if defined(Q_OS_ANDROID)
 #  include <android/log.h>
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-#include <QDirIterator>
 #include <Windows.h>
 #  pragma comment(lib, "user32.lib")
 
