@@ -1,13 +1,11 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick.Window
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import HAiQ
+pragma ComponentBehavior: Bound
 import QtQuick.Controls.Universal
+import HAiQ
+import Ui
+
 
 Control {
     id: root
@@ -29,14 +27,14 @@ Control {
 
     contentItem: GridLayout {
         id: grid
-        columns: _portrait ? 1 : 2
+        columns: root._portrait ? 1 : 2
         rowSpacing: 7
         columnSpacing: 7
 
         Label {            
             leftPadding: 10
             text: 'Farbe'
-            font.pixelSize: root.font.pixelSize * (_portrait ? 0.5 : 1)
+            font.pixelSize: root.font.pixelSize * (root._portrait ? 0.5 : 1)
         }
         SceneSlider {
             id: hue
@@ -52,7 +50,7 @@ Control {
         Label {
             leftPadding: 10
             text: 'Sättigung'
-            font.pixelSize: root.font.pixelSize * (_portrait ? 0.5 : 1)
+            font.pixelSize: root.font.pixelSize * (root._portrait ? 0.5 : 1)
         }
         SceneSlider {
             id: saturation
@@ -74,7 +72,7 @@ Control {
         Label {
             leftPadding: 10
             text: 'Helligkeit'
-            font.pixelSize: root.font.pixelSize * (_portrait ? 0.5 : 1)
+            font.pixelSize: root.font.pixelSize * (root._portrait ? 0.5 : 1)
         }
         SceneSlider {
             id: lightness
@@ -95,7 +93,7 @@ Control {
             onMoved: root.updateStyle()
         }
         Flow {
-            Layout.columnSpan: _portrait ? 1 : 2
+            Layout.columnSpan: root._portrait ? 1 : 2
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignCenter
             spacing: 12
@@ -154,6 +152,8 @@ Control {
 
                 model: sortedColors.length
                 SceneButton {
+                    required property int index
+
                     Universal.accent: predefined.sortedColors[index]['color']
                     onClicked: {
                         let col = this.Universal.accent

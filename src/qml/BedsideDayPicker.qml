@@ -1,11 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Controls.Universal
+pragma ComponentBehavior: Bound
 import HAiQ
+import Ui
 
 
 StackPage {
@@ -30,6 +28,7 @@ StackPage {
             model: 7
 
             RoundButton {
+                required property int index
                 property int day: index == 6 ? 0 : index + 1
 
                 Layout.row: (index < 5 ? index : index + 1) / 2

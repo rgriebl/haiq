@@ -1,31 +1,31 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Window
+pragma ComponentBehavior: Bound
 import Qt.labs.platform as Labs
 import HAiQ
+import Ui
+
 
 ApplicationWindow {
     id: root
     title: "Raumsteuerung Büro"
-    visible: true
     flags: Qt.Window | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowSystemMenuHint | Qt.WindowCloseButtonHint
     property Control fontSizeDummy: Control { }
     font.pixelSize: fontSizeDummy.font.pixelSize * 1.3
 
     onClosing: function(close) { close.accepted = false; hide() }
-    Shortcut { sequence: StandardKey.Cancel; onActivated: hide() }
+    Shortcut { sequence: StandardKey.Cancel; onActivated: root.hide() }
+
 
     Labs.SystemTrayIcon {
         id: trayIcon
-        icon.source: "/icons/haiq.svg"
+        icon.source: "qrc:/icons/haiq.png"
+        icon.mask: true
         tooltip: root.title
         visible: true
 
-        onActivated: {
+        onActivated: function(reason) {
             switch (reason) {
             case Labs.SystemTrayIcon.Trigger:
             case Labs.SystemTrayIcon.DoubleClick:
@@ -53,15 +53,15 @@ ApplicationWindow {
                 text: qsTr("Open HomeMatic Web-UI...")
                 onTriggered: Qt.openUrlExternally("http://ccu2.home/")
             }
-//            Labs.MenuItem { separator: true }
-//            Labs.MenuItem {
-//                text: qsTr("About")
-//                onTriggered: aboutDialog.show()
+            //            Labs.MenuItem { separator: true }
+            //            Labs.MenuItem {
+            //                text: qsTr("About")
+            //                onTriggered: aboutDialog.show()
 
-//                Labs.Dialog {
-//                    id: aboutDialog
-//                }
-//            }
+            //                Labs.Dialog {
+            //                    id: aboutDialog
+            //                }
+            //            }
             Labs.MenuItem { separator: true }
             Labs.MenuItem {
                 text: qsTr("Quit")
@@ -81,8 +81,11 @@ ApplicationWindow {
                 interval: 500
                 running: false
                 repeat: false
-                property var callback
-                onTriggered: callback()
+                onTriggered: {
+                    trayIcon.showMessage("Anruf",
+                                         "Eingehender Anruf von\n\n" + incoming.caller,
+                                         Labs.SystemTrayIcon.Information, 20 * 1000)
+                }
             }
             Component.onCompleted: {
                 HomeAssistant.subscribe(entity, function(state, attributes) {
@@ -95,16 +98,8 @@ ApplicationWindow {
             }
 
             onStatusChanged: {
-                if (status === 'ringing' && trayIcon.supportsMessages) {
-                    if (!delay.running) {
-                        delay.callback = function() {
-                            trayIcon.showMessage("Anruf",
-                                                 "Eingehender Anruf von\n\n" + caller,
-                                                 SystemTrayIcon.Information, 20 * 1000)
-                        }
-                        delay.running = true
-                    }
-                }
+                if (status === 'ringing' && trayIcon.supportsMessages)
+                delay.running = true
             }
         }
     }
@@ -212,9 +207,9 @@ ApplicationWindow {
                         from: 5; to: 30; stepSize: 1
                         textFromValue: function(value, locale) { return Math.round(value) + "°" }
                         valueFromText: function(text, locale) { return Number.fromLocaleString(locale, text) }
-                        enabled: modeGroup.checkedButton && modeGroup.checkedButton.hvacMode !== "off"
+                        enabled: modeGroup.checkedButton && modeGroup.hvacMode !== "off"
 
-                        font.pixelSize: Window.window.font.pixelSize * 2
+                        font.pixelSize: root.font.pixelSize * 2
 
                         onValueModified: delayedSetTemp.restart()
 
@@ -227,48 +222,46 @@ ApplicationWindow {
                         }
                     }
 
-                    ButtonGroup {
-                        id: modeGroup
-                        exclusive: true
-                        onClicked: HomeAssistant.callService('climate.set_hvac_mode', heizung.entity,
-                                                             { hvac_mode: button.hvacMode })
+                    component RoundHvacButton : RoundIconButton {
+                        ButtonGroup.group: modeGroup
+                        checkable: true
+                        highlighted: checked
+                        required property string hvacMode
+                        ToolTip.delay: 500
+                        ToolTip.visible: hovered
                     }
 
-                    RoundIconButton {
+                    ButtonGroup {
+                        id: modeGroup
+                        property string hvacMode: 'off'
+                        exclusive: true
+                        onClicked: function(button) {
+                            hvacMode = (button as RoundHvacButton).hvacMode
+                            HomeAssistant.callService('climate.set_hvac_mode', heizung.entity,
+                                                      { hvac_mode: hvacMode })
+                        }
+                    }
+
+                    RoundHvacButton {
                         icon.name: 'mdi/power-off'
                         scale: 2
                         paddingScale: 2
-                        ButtonGroup.group: modeGroup
-                        checkable: true
-                        property string hvacMode: "off"
-
+                        hvacMode: "off"
                         ToolTip.text: "Aus"
-                        ToolTip.delay: 500
-                        ToolTip.visible: hovered
                     }
-                    RoundIconButton {
+                    RoundHvacButton {
                         icon.name: 'oa/sani_heating_automatic'
                         scale: 4
                         paddingScale: 1
-                        checkable: true
-                        ButtonGroup.group: modeGroup
-                        property string hvacMode: "auto"
-
+                        hvacMode: "auto"
                         ToolTip.text: "Automatik Modus"
-                        ToolTip.delay: 500
-                        ToolTip.visible: hovered
                     }
-                    RoundIconButton {
+                    RoundHvacButton {
                         icon.name: 'oa/sani_heating_manual'
                         scale: 4
                         paddingScale: 1
-                        checkable: true
-                        ButtonGroup.group: modeGroup
-                        property string hvacMode: "heat"
-
+                        hvacMode: "heat"
                         ToolTip.text: "Manueller Modus"
-                        ToolTip.delay: 500
-                        ToolTip.visible: hovered
                     }
                     RoundIconButton {
                         icon.name: 'oa/temp_temperature_max'
@@ -429,7 +422,7 @@ ApplicationWindow {
                     Timer {
                         interval: 5 * 60 * 1000
                         running: favorites.opened
-                        onTriggered: close()
+                        onTriggered: favorites.close()
                     }
 
                     Dialog {
@@ -448,6 +441,8 @@ ApplicationWindow {
                                 model: playing.favorites
 
                                 delegate: ItemDelegate {
+                                    required property var modelData
+
                                     width: ListView.view.width
                                     text: modelData.name
                                     icon.name: 'fa/play-solid'
@@ -504,4 +499,3 @@ ApplicationWindow {
         }
     }
 }
-

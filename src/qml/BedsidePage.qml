@@ -1,27 +1,25 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import QtQuick.Controls.Universal
 import HAiQ
-import org.griebl.calendar 1.0
+import Ui
 
 
 Control {
     id: root
+    required property Item mainStack
 
-    property string blindsEntity: Config.coverEntity || "cover.schlafzimmer_rollladen"
-    property string ceilingLightEntity: Config.lights[0].entity || "switch.schlafzimmer_licht"
-    property string ceilingLightIcon: Config.lights[0].icon || 'fa/lightbulb-solid'
-    property string wardrobeLightEntity: Config.lights[1].entity || "switch.schlafzimmer_schranklicht"
-    property string wardrobeLightIcon: Config.lights[1].icon || 'fa/tshirt-solid'
+    required property string blindsEntity
+    required property string ceilingLightEntity
+    required property string ceilingLightIcon
+    required property string wardrobeLightEntity
+    required property string wardrobeLightIcon
 
     GridLayout {
         id: topLayout
 
-        property real spacing: font.pixelSize  / 3
+        property real spacing: root.font.pixelSize  / 3
 
         anchors.fill: parent
         anchors.margins: spacing / 2
@@ -67,8 +65,10 @@ Control {
 
             currentIndex: SqueezeBoxServer.thisPlayer && SqueezeBoxServer.thisPlayer.alarmActive ? 1 : 0
 
+            property color barColor: alarmBar.currentIndex === 1 ? 'transparent' : Qt.rgba(1, 1, 1, 0.3)
+
             background: Rectangle {
-                color: alarmBar.currentIndex === 1 ? 'transparent' : Qt.rgba(1, 1, 1, 0.3) //Universal.foreground
+                color: alarmBar.barColor
                 radius: alarmButton.font.pixelSize / 2
             }
 
@@ -81,7 +81,7 @@ Control {
                     icon.name: 'mdi-rounded/alarm'
 
                     property bool alarmsEnabled: SqueezeBoxServer.thisPlayer ? SqueezeBoxServer.thisPlayer.alarmsEnabled : false
-                    Universal.accent: alarmsEnabled ? Qt.rgba(0.8, 0.8, 0.1, 1) : alarmBar.background.color
+                    Universal.accent: alarmsEnabled ? Qt.rgba(0.8, 0.8, 0.1, 1) : alarmBar.barColor
                     onClicked: if (SqueezeBoxServer.thisPlayer) SqueezeBoxServer.thisPlayer.alarmsEnabled = !alarmsEnabled
                 }
                 Label {
@@ -100,7 +100,7 @@ Control {
                         anchors.fill: parent
                         onClicked: {
                             if (SqueezeBoxServer.thisPlayer)
-                                mainStack.push("BedsideAlarm.qml", { player: SqueezeBoxServer.thisPlayer })
+                                root.mainStack.push("BedsideAlarm.qml", { player: SqueezeBoxServer.thisPlayer })
                         }
                     }
                 }
@@ -108,7 +108,7 @@ Control {
                     id: alarmMenu
                     background: null
                     icon.name: 'fa/angle-right-solid'
-                    onClicked: mainStack.push("BedsideSelectPlayer.qml", { players: SqueezeBoxServer.players })
+                    onClicked: root.mainStack.push("BedsideSelectPlayer.qml", { players: SqueezeBoxServer.players })
                 }
             }
 
@@ -166,20 +166,20 @@ Control {
                 triggeredOnStart: true
                 repeat: true
                 running: true
-                onTriggered: Calendar.reload()
+                onTriggered: MainCalendar.reload()
             }
 
             Connections {
-                target: Calendar
+                target: MainCalendar
                 function onLoadingChanged() {
-                    if (!Calendar.loading)
+                    if (!MainCalendar.loading)
                         upcoming.updateFromTo()
                 }
             }
 
             UpcomingCalendarEntries {
                 id: upcoming
-                calendar: Calendar
+                calendar: MainCalendar
                 property string nextEntry
 
                 function updateFromTo() {
@@ -212,7 +212,7 @@ Control {
 
             icon.name: 'fa/angle-double-up-solid'
             Universal.accent: Qt.rgba(0.5, 1, 0.5, 0.9)
-            onClicked: HomeAssistant.callService("cover.open_cover", blindsEntity)
+            onClicked: HomeAssistant.callService("cover.open_cover", root.blindsEntity)
         }
         SceneButton {
             Layout.row: 1
@@ -221,7 +221,7 @@ Control {
 
             icon.name: 'fa/stop-solid'
             Universal.accent: Qt.rgba(1, 0.5, 0.5, 0.9)
-            onClicked: HomeAssistant.callService("cover.stop_cover", blindsEntity)
+            onClicked: HomeAssistant.callService("cover.stop_cover", root.blindsEntity)
         }
         SceneButton {
             Layout.row: 2
@@ -230,7 +230,7 @@ Control {
 
             icon.name: 'fa/angle-double-down-solid'
             Universal.accent: Qt.rgba(0.5, 1, 0.5, 0.9)
-            onClicked: HomeAssistant.callService("cover.close_cover", blindsEntity)
+            onClicked: HomeAssistant.callService("cover.close_cover", root.blindsEntity)
         }
     }
 }

@@ -1,11 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import HAiQ
+import Ui
 
 
 Control {
@@ -22,13 +20,9 @@ Control {
 
         SvgIcon {
             id: icon
-
-            prefix: "fhemsvg/"
-            icon: root.isBag ? "bag" : "dustbin"
-
+            name: root.isBag ? "fhemsvg/bag" : "fhemsvg/dustbin"
             anchors.centerIn: parent
             size: root.font.pixelSize * 3
-
             opacity: root.isActive ? 1 : Math.max(1 - root.dueInDays / 28, 0.5)
         }
         Label {

@@ -1,13 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick.Window
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import HAiQ
-import QtQuick.Controls.Universal
+import Ui
+
 
 Control {
     id: control
@@ -39,7 +34,7 @@ Control {
         value: control.value * control.factor
         
         textFromValue: function(value, locale) {
-            return Number(value / control.factor).toLocaleString(locale, 'f', decimals) + control.unit
+            return Number(value / control.factor).toLocaleString(locale, 'f', control.decimals) + control.unit
         }
         
         contentItem: Label {
@@ -76,6 +71,7 @@ Control {
                 anchors.centerIn: parent
                 opacity: spinbox.contentItem.opacity
                 source: control.upIconSource
+                size: control.font.pixelSize
             }
         }
         down.indicator:  Control {
@@ -88,6 +84,7 @@ Control {
                 anchors.centerIn: parent
                 opacity: spinbox.contentItem.opacity
                 source: control.downIconSource
+                size: control.font.pixelSize
             }
         }
         

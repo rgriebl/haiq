@@ -1,10 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import HAiQ
+import Ui
 
 
 GroupBox {
@@ -24,14 +22,14 @@ GroupBox {
         })
     }
 
-    DialButton {
+     DialButton {
         anchors.centerIn: parent
         value: dimmer.currentBrightness
         dialColor: "yellow"
         icon.name: 'fa/lightbulb-solid'
         scale: 3
 
-        onClicked: setBrightness(dimmer.currentBrightness ? 0 : 100)
+        onClicked: dimmer.setBrightness(dimmer.currentBrightness ? 0 : 100)
         onMoved: brightnessTimer.restart()
 
         // we need to throttle updates, otherwise we will overflow the MQTT stack in the ESP

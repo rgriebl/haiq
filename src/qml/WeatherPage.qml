@@ -1,14 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Window
+pragma ComponentBehavior: Bound
 import HAiQ
-import QtQuick.Shapes as Shapes
-import Qt5Compat.GraphicalEffects
+import Ui
 
 
 Pane {
@@ -32,12 +27,7 @@ Pane {
     readonly property real hourSlice: width / 23.5
     readonly property real daySlice: width / days
 
-    Component  {
-        id: pcurve
-        PathCurve { }
-    }
-
-    SwipeView {
+     SwipeView {
         id: swipe
         anchors.fill: parent
         orientation: Qt.Horizontal
@@ -45,7 +35,7 @@ Pane {
 
         Item {
             Repeater {
-                model: dailyWeatherModel
+                model: root.dailyWeatherModel
                 delegate: WeatherDailyDelegate {
                     required property int index
 
@@ -58,7 +48,7 @@ Pane {
                 id: tempHighCurve
                 anchors.fill: parent
                 z: 2
-                model: dailyWeatherModel
+                model: root.dailyWeatherModel
                 count: root.days
                 offset: 0
                 propertyName: "temperature"
@@ -68,7 +58,7 @@ Pane {
                 id: tempLowCurve
                 anchors.fill: parent
                 z: 2
-                model: dailyWeatherModel
+                model: root.dailyWeatherModel
                 count: root.days
                 offset: 0
                 propertyName: "templow"
@@ -79,7 +69,7 @@ Pane {
                 anchors.fill: parent
                 z: 2
                 strokeWidth: 3
-                model: dailyWeatherModel
+                model: root.dailyWeatherModel
                 count: root.days
                 offset: 0
                 propertyName: "precipitation_probability"
@@ -96,7 +86,7 @@ Pane {
                 height: parent.height / 2 - 3
 
                 Repeater {
-                    model: hourlyWeatherModel
+                    model: root.hourlyWeatherModel
                     delegate: WeatherHourlyDelegate {
                         required property int index
 
@@ -111,7 +101,7 @@ Pane {
                     id: tempCurve
                     anchors.fill: parent
                     z: 2
-                    model: hourlyWeatherModel
+                    model: root.hourlyWeatherModel
                     count: root.hours / 2
                     offset: 0
                     propertyName: "temperature"
@@ -121,7 +111,7 @@ Pane {
                     anchors.fill: parent
                     z: 2
                     strokeWidth: 3
-                    model: hourlyWeatherModel
+                    model: root.hourlyWeatherModel
                     count: root.hours / 2
                     offset: 0
                     propertyName: "precipitation_probability"
@@ -137,7 +127,7 @@ Pane {
                 y: height + 6
 
                 Repeater {
-                    model: hourlyWeatherModel
+                    model: root.hourlyWeatherModel
                     delegate: WeatherHourlyDelegate {
                         required property int index
 
@@ -151,7 +141,7 @@ Pane {
                     id: tempCurve2
                     anchors.fill: parent
                     z: 2
-                    model: hourlyWeatherModel
+                    model: root.hourlyWeatherModel
                     count: root.hours / 2
                     offset: (root.hours / 2)
                     propertyName: "temperature"
@@ -161,7 +151,7 @@ Pane {
                     anchors.fill: parent
                     z: 2
                     strokeWidth: 3
-                    model: hourlyWeatherModel
+                    model: root.hourlyWeatherModel
                     count: root.hours / 2
                     offset: (root.hours / 2)
                     propertyName: "precipitation_probability"

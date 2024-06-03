@@ -1,14 +1,10 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick.Window
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Universal
-import QtQuick.Layouts
 import QtQuick.VirtualKeyboard
 import QtQuick.VirtualKeyboard.Settings
 import HAiQ
+import Ui
 
 
 TabletView {
@@ -21,22 +17,7 @@ TabletView {
     font.bold: true
     font.pixelSize: height / 36
 
-    property real defaultRowSpacing: font.pixelSize / 2
-    property real defaultColumnSpacing: font.pixelSize / 4
-
-    palette.text: Universal.foreground
-    palette.window: Universal.background
-
-    property Component defaultOverlay: Rectangle {
-        color: Qt.rgba(0, 0, 0, 0.8)
-        Behavior on opacity { NumberAnimation { duration: 200 } }
-    }
-
     property int backToHomeScreen: 15 // min
-
-    function showWeather() {
-        weatherButton.checked = true
-    }
 
     // property int nightTimeStart: 23
     // property int nightTimeEnd: 6
@@ -106,12 +87,8 @@ TabletView {
 
         states: State {
             name: "active"
-            when: Qt.inputMethod.visible
-            PropertyChanges {
-                target: inputPanel
-                y: root.height - inputPanel.height
-
-            }
+            when: InputMethod.visible
+            PropertyChanges { inputPanel.y: root.height - inputPanel.height }
         }
         transitions: Transition {
             to: "active"
@@ -143,7 +120,9 @@ TabletView {
             Layout.topMargin: 0
             Layout.bottomMargin: 10
 
-            KitchenPage { }
+            KitchenPage {
+                onRequestShowWeather: weatherButton.checked = true
+            }
             WeatherPage { location: "osterseeon" }
             AlarmPage { }
             HomeAssistantPage { }
@@ -174,12 +153,12 @@ TabletView {
                 anchors.centerIn: parent
                 columns: 1
                 rows: children.length
-                rowSpacing: defaultRowSpacing / 2
-                columnSpacing: defaultColumnSpacing
+                rowSpacing: root.font.pixelSize / 2
+                columnSpacing: rowSpacing / 2
 
                 SceneButton {
                     id: homeButton
-                    Layout.margins: defaultRowSpacing
+                    Layout.margins: buttonLayout.rowSpacing
                     icon.name: 'mdi/view-grid'
                     scale: 2
                     checkable: true
@@ -188,7 +167,7 @@ TabletView {
                 }
                 SceneButton {
                     id: weatherButton
-                    Layout.margins: defaultRowSpacing
+                    Layout.margins: buttonLayout.rowSpacing
                     icon.name: 'mdi/weather-partly-rainy'
                     scale: 2
                     checkable: true
@@ -196,7 +175,7 @@ TabletView {
                 }
                 SceneButton {
                     id: alarmButton
-                    Layout.margins: defaultRowSpacing
+                    Layout.margins: buttonLayout.rowSpacing
                     icon.name: 'mdi-rounded/alarm'
                     scale: 2
                     checkable: true
@@ -204,7 +183,7 @@ TabletView {
                 }
                 SceneButton {
                     id: haButton
-                    Layout.margins: defaultRowSpacing
+                    Layout.margins: buttonLayout.rowSpacing
                     icon.name: 'mdi/home-assistant'
                     scale: 2
                     checkable: true
@@ -212,7 +191,7 @@ TabletView {
                 }
                 SceneButton {
                     id: browserButton
-                    Layout.margins: defaultRowSpacing
+                    Layout.margins: buttonLayout.rowSpacing
                     icon.name: 'mdi/firefox'
                     scale: 2
                     checkable: true
@@ -223,7 +202,7 @@ TabletView {
                     property string entityState: ''
 
                     id: lightButton
-                    Layout.margins: defaultRowSpacing
+                    Layout.margins: buttonLayout.rowSpacing
                     icon.name: 'mdi/lightbulb-on'
                     scale: 2
                     checkable: true

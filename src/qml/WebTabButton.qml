@@ -129,6 +129,7 @@ TabButton {
         Repeater {
             model: [root.tab.activateAction, root.tab.freezeAction, root.tab.discardAction]
             RadioButton {
+                required property var modelData
                 action: modelData
                 verticalPadding: 9
                 horizontalPadding: 14

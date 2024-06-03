@@ -1,13 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtCore
-import QtQuick
-import QtQuick.Window
-import QtQuick.Controls
 import QtQuick.Controls.Universal
-import QtQuick.Layouts
 import HAiQ
+import Ui
 
 
 ApplicationWindow {
@@ -16,10 +12,11 @@ ApplicationWindow {
     property real menuFontPixelSize: root.font.pixelSize
     property Drawer drawer: menuDrawer
 
-    visible: true
-
     property int screenWidth: 1280
     property int screenHeight: 800
+
+    palette.text: Universal.foreground
+    palette.window: Universal.background
 
     Component.onCompleted: {
         switch (Qt.platform.pluginName) {
@@ -67,7 +64,7 @@ ApplicationWindow {
     MenuDrawer {
         id: menuDrawer
 
-        icon.source: "/icons/haiq"
+        iconName: 'haiq'
         font.pixelSize: root.menuFontPixelSize
 
         items: ListModel {
@@ -91,6 +88,14 @@ ApplicationWindow {
                 stretch: true
             }
             ListElement {
+                text: "Neustarten"
+                iconName: 'mdi/power'
+                action: function() { Qt.exit(42) }
+            }
+            ListElement {
+                spacer: true
+            }
+            ListElement {
                 text: "Beenden"
                 iconName: 'mdi/exit-to-app'
                 action: function() { Qt.quit() }
@@ -110,10 +115,10 @@ ApplicationWindow {
         id: colorPopup
 
         modal: true
-        Overlay.modal: defaultOverlay
+        Overlay.modal: DarkOverlay { }
         background: Rectangle {
             color: Qt.rgba(28/255, 28/255, 30/255)
-            radius: parent.font.pixelSize
+            radius: colorPopup.font.pixelSize
         }
         padding: font.pixelSize
         anchors.centerIn: Overlay.overlay

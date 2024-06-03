@@ -13,12 +13,12 @@ qt_add_qml_module(ui_module
     DEPENDENCIES
         QtQuick
     IMPORTS
+        QtCore
         QtQml
         QtQuick
         QtQuick.Layouts
-        QtQuick.Shapes
+        QtQuick.Window
         ${QUICK_CONTROLS}
-
     QML_FILES
         AlarmPage.qml
         BedsideAlarm.qml
@@ -32,6 +32,7 @@ qt_add_qml_module(ui_module
         CalendarEvents.qml
         ColorSettings.qml
         CurveLine.qml
+        DarkOverlay.qml
         DialButton.qml
         DigitalClock.qml
         DimmerControl.qml
@@ -79,4 +80,4 @@ qt_add_qml_module(ui_module
         WebTabButton.qml
         WebTabStack.qml
         WebToolButton.qml
-)
+    )

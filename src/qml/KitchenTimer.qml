@@ -1,10 +1,7 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import Ui
 
 
 Control {
@@ -67,14 +64,14 @@ Control {
                 let d = new Date()
                 let elapsed = d.getTime() - _timer.startTime
 
-                timerRemaining = _timer.interval - elapsed
+                root.timerRemaining = _timer.interval - elapsed
 
                 interval = 1000 - d.getMilliseconds()
             }
         }
         onTriggered: {
-            stopTimer()
-            timerTriggered()
+            root.stopTimer()
+            root.timerTriggered()
         }
     }
 
@@ -85,7 +82,7 @@ Control {
 
         StackLayout {
             id: tumblerStack
-            currentIndex: timerActive ? 1 : 0
+            currentIndex: root.timerActive ? 1 : 0
 
             RowLayout {
                 id: tumblerRow
@@ -96,6 +93,8 @@ Control {
 
                     Label {
                         id: label
+                        required property var index
+                        required property var modelData
                         property real d: Tumbler.displacement / (Tumbler.tumbler.visibleItemCount / 2)
 
                         text: String(modelData).padStart(2, '0')
@@ -112,7 +111,7 @@ Control {
                 }
                 Item {
                     Layout.fillWidth: true
-                    height: 10
+                    implicitHeight: 10
                     Tracer { }
                 }
                 Label {
@@ -175,7 +174,7 @@ Control {
                 }
                 Item {
                     Layout.fillWidth: true
-                    height: 10
+                    implicitHeight: 10
                     Tracer { }
                 }
             }
@@ -186,7 +185,7 @@ Control {
                 text: {
                     let d = new Date()
                     d.setHours(0,0,0,0);
-                    d.setMilliseconds(timerRemaining)
+                    d.setMilliseconds(root.timerRemaining)
                     return Qt.formatTime(d, "hh:mm:ss")
                 }
                 minimumPixelSize: root.font.pixelSize
@@ -196,33 +195,33 @@ Control {
             }
         }
         RowLayout {
-            Layout.leftMargin: font.pixelSize
+            Layout.leftMargin: root.font.pixelSize
             Layout.rightMargin: Layout.leftMargin
-            Layout.topMargin: font.pixelSize / 2
+            Layout.topMargin: root.font.pixelSize / 2
             Layout.bottomMargin: Layout.topMargin
 
             SceneButton {
                 Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                 icon.name: 'mdi/stop'
                 scale: 2
-                enabled: timerActive
-                onClicked: stopTimer()
+                enabled: root.timerActive
+                onClicked: root.stopTimer()
             }
             Item { Layout.fillWidth: true }
             SceneButton {
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                 icon.name: 'mdi/refresh'
                 scale: 2
-                enabled: !timerActive && (timerInterval !== 0)
-                onClicked: resetTimer()
+                enabled: !root.timerActive && (root.timerInterval !== 0)
+                onClicked: root.resetTimer()
             }
             Item { Layout.fillWidth: true }
             SceneButton {
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                icon.name: (timerActive && !timerPaused) ? 'mdi/pause' : 'mdi/play'
+                icon.name: (root.timerActive && !root.timerPaused) ? 'mdi/pause' : 'mdi/play'
                 scale: 2
-                enabled: timerInterval > 0
-                onClicked: (timerActive && !timerPaused) ? pauseTimer() : startTimer()
+                enabled: root.timerInterval > 0
+                onClicked: (root.timerActive && !root.timerPaused) ? root.pauseTimer() : root.startTimer()
             }
         }
     }
@@ -233,7 +232,7 @@ Control {
         height: parent.font.pixelSize
         color: Qt.rgba(1,1,1,0.3)
         radius: height / 4
-        visible: tumblerStack.currentIndex == 0
+        visible: tumblerStack.currentIndex === 0
 
         Tracer { }
 

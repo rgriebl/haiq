@@ -1,9 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Shapes
-import QtQuick.Controls
+import QtQuick.Shapes as Shapes
+import Ui
+
 
 Control {
     id: root
@@ -32,8 +32,8 @@ Control {
 
     MouseArea {
         anchors.fill: parent
-        onWheel: {
-            changePosition(wheel.angleDelta.y / 120 * root.stepSize)
+        onWheel: function(wheel) {
+            root.changePosition(wheel.angleDelta.y / 120 * root.stepSize)
         }
     }
 
@@ -59,16 +59,16 @@ Control {
 
     }
 
-    Shape {
+    Shapes.Shape {
         anchors.fill: parent
         layer.enabled: true
         layer.samples: 4
 
-        ShapePath {
+        Shapes.ShapePath {
             strokeWidth: button.radius / 4
             fillColor: "transparent"
-            strokeColor: "darkgray"
-            capStyle: ShapePath.RoundCap
+            strokeColor: root.palette.mid
+            capStyle: Shapes.ShapePath.RoundCap
 
             PathAngleArc {
                 id: arc
@@ -80,17 +80,17 @@ Control {
                 sweepAngle: 270
             }
         }
-        ShapePath {
+        Shapes.ShapePath {
             id: ring
             strokeWidth: button.radius / 4 - 2
             fillColor: "transparent"
             strokeColor: "yellow"
-            capStyle: ShapePath.RoundCap
+            capStyle: Shapes.ShapePath.RoundCap
 
             PathAngleArc {
                 id: arc2
                 centerX: arc.centerX
-                centerY: root.width / 2  // https://codereview.qt-project.org/#/c/247812/
+                centerY: arc.centerY
                 radiusX: arc.radiusX
                 radiusY: arc.radiusY
                 startAngle: arc.startAngle

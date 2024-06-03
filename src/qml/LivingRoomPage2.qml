@@ -1,19 +1,15 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Window
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Controls.Universal
 import HAiQ
+import Ui
+
 
 Control {
     id: root
 
-    property real rowSpacing: defaultRowSpacing
-    property real columnSpacing: defaultColumnSpacing
+    property real rowSpacing: root.font.pixelSize
+    property real columnSpacing: rowSpacing / 4
 
     topPadding: rowSpacing
     bottomPadding: 0
@@ -44,11 +40,17 @@ Control {
             property real currentTemperature: 0
             property bool doorOpen: false
 
+            component HvacButton : SceneButton {
+                required property string hvacMode
+            }
+
             ButtonGroup {
                 id: buttonsHeizungWohnzimmer
                 exclusive: true
-                onClicked: HomeAssistant.callService('climate.set_hvac_mode', heizungWohnzimmer.entity,
-                                                     { hvac_mode: button.hvacMode })
+                onClicked: function(button) {
+                    HomeAssistant.callService('climate.set_hvac_mode', heizungWohnzimmer.entity,
+                                              { hvac_mode: (button as HvacButton).hvacMode })
+                }
 
                 Component.onCompleted: {
                     HomeAssistant.subscribe(heizungWohnzimmer.entity, function(state, attributes) {
@@ -69,27 +71,26 @@ Control {
                 }
             }
 
-
-            SceneButton {
+            HvacButton {
                 id: heatingOff
                 icon.name: 'mdi/power-off'
                 ButtonGroup.group: buttonsHeizungWohnzimmer
                 checkable: true
-                property string hvacMode: 'off'
+                hvacMode: 'off'
             }
-            SceneButton {
+            HvacButton {
                 icon.name: 'oa/sani_heating_automatic'
                 ButtonGroup.group: buttonsHeizungWohnzimmer
                 checkable: true
                 scale: 3
-                property string hvacMode: 'auto'
+                hvacMode: 'auto'
             }
-            SceneButton {
+            HvacButton {
                 icon.name: 'oa/sani_heating_manual'
                 ButtonGroup.group: buttonsHeizungWohnzimmer
                 checkable: true
                 scale: 3
-                property string hvacMode: 'heat'
+                hvacMode: 'heat'
             }
             Item {
                 Layout.fillWidth: true

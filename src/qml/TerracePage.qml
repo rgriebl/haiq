@@ -1,19 +1,15 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick.Window
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import HAiQ
-import QtQuick.Controls.Universal
+import Ui
+
 
 Control {
     id: root
 
-    property real rowSpacing: defaultRowSpacing
-    property real columnSpacing: defaultColumnSpacing
+    property real rowSpacing: root.font.pixelSize
+    property real columnSpacing: rowSpacing / 4
 
     topPadding: rowSpacing
     bottomPadding: 0

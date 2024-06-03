@@ -1,13 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Window
 import HAiQ
-import QtQuick.Controls.Universal
+import Ui
 
 
 Control {
@@ -66,11 +61,11 @@ Control {
         states: [
             State {
                 name: "showcover"
-                PropertyChanges { target: coverArt; opacity: 1 }
-                PropertyChanges { target: playButton; opacity: 0 }
-                PropertyChanges { target: favoritesButton; opacity: 0 }
-                PropertyChanges { target: volumeButton; opacity: 0 }
-                PropertyChanges { target: playing; opacity: 0 }
+                PropertyChanges { coverArt.opacity: 1 }
+                PropertyChanges { playButton.opacity: 0 }
+                PropertyChanges { favoritesButton.opacity: 0 }
+                PropertyChanges { volumeButton.opacity: 0 }
+                PropertyChanges { playing.opacity: 0 }
             }
         ]
         transitions: [
@@ -130,7 +125,7 @@ Control {
         background: Rectangle {
             radius: width / 2
             color: Qt.hsla(0, 0, 0, 0.5)
-            border.width: parent.down ? 5 : 2
+            border.width: favoritesButton.down ? 5 : 2
             border.color: Qt.hsla(0, 0, 1, 0.5)
         }
 
@@ -163,7 +158,7 @@ Control {
         background: Rectangle {
             radius: width / 2
             color: Qt.hsla(0, 0, 0, 0.5)
-            border.width: parent.down ? 5 : 2
+            border.width: playButton.down ? 5 : 2
             border.color: Qt.hsla(0, 0, 1, 0.5)
         }
 
@@ -182,7 +177,7 @@ Control {
         background: Rectangle {
             radius: width / 2
             color: Qt.hsla(0, 0, 0, 0.5)
-            border.width: parent.down ? 5 : 2
+            border.width: volumeButton.down ? 5 : 2
             border.color: Qt.hsla(0, 0, 1, 0.5)
         }
 

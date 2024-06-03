@@ -1,8 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
+import Ui
+
 
 RoundButton {
     id: root
@@ -12,8 +12,10 @@ RoundButton {
     contentItem: SvgIcon {
         id: svgIcon
         anchors.centerIn: parent
-        name: parent.icon.name
+        name: root.icon.name
         scale: 1.5
+        size: root.font.pixelSize
+        color: root.palette.buttonText
     }
     
     implicitHeight: Math.max(contentItem.implicitHeight, contentItem.implicitWidth) * paddingScale

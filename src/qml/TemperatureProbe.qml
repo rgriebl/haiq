@@ -1,10 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import HAiQ
+import Ui
 
 
 Control {
@@ -24,7 +22,7 @@ Control {
         font: root.font
 
         Component.onCompleted: {
-            HomeAssistant.subscribe(entity, function(state, attributes) {
+            HomeAssistant.subscribe(root.entity, function(state, attributes) {
                 temperature = state
                 root.lastUpdate = new Date()
             })

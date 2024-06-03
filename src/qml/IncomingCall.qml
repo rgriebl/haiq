@@ -1,11 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Window
 import HAiQ
+import Ui
 
 
 Popup {
@@ -17,14 +14,13 @@ Popup {
     property string status         //: 'ringing'
 
     modal: true
-    Overlay.modal: defaultOverlay
+    Overlay.modal: DarkOverlay { }
     background: Rectangle {
         color: Qt.rgba(28/255, 28/255, 30/255)
-        radius: parent.font.pixelSize
+        radius: phoneCall.font.pixelSize
 
         SvgIcon {
             id: phoneIcon
-            //source: 'icon:mdi/phone'
             name: 'mdi/phone'
             color: 'green'
             opacity: 0.5

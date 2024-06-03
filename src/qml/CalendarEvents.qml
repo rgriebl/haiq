@@ -1,11 +1,10 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+pragma ComponentBehavior: Bound
 import HAiQ
+import Ui
+
 
 Control {
     id: root
@@ -40,7 +39,7 @@ Control {
 
         model: UpcomingCalendarEntries {
             id: upcoming
-            calendar: Calendar
+            calendar: MainCalendar
             property int lastDate: -1
 
             function updateFromTo() {
@@ -79,7 +78,7 @@ Control {
             Label {
                 id: startEndHeader
                 anchors.left: parent.left
-                width: dx
+                width: parent.dx
                 horizontalAlignment: Text.AlignHCenter
                 text: "Zeitpunkt"
                 font.pixelSize: root.font.pixelSize / 2
@@ -94,6 +93,10 @@ Control {
             }
         }
         delegate: Item {
+            id: delegate
+            required property int index
+            required property var model
+
             width: ListView.view.width
             height: root.font.pixelSize * 3
 
@@ -115,24 +118,24 @@ Control {
                 anchors.top: parent.top
                 anchors.topMargin: font.pixelSize / 8
                 anchors.left: parent.left
-                width: dx
+                width: delegate.dx
                 horizontalAlignment: Text.AlignHCenter
-                text: (model.sameDay ? startDateTime.toLocaleDateString(Qt.locale("de_DE"), "ddd ") : "")
-                      + Qt.formatDate(model.startDateTime, "dd.MM.")
-                      + (model.sameDay ? "" : (" - " + Qt.formatDate(model.endDateTime, "dd.MM.")))
+                text: (delegate.model.sameDay ? delegate.model.startDateTime.toLocaleDateString(Qt.locale("de_DE"), "ddd ") : "")
+                      + Qt.formatDate(delegate.model.startDateTime, "dd.MM.")
+                      + (delegate.model.sameDay ? "" : (" - " + Qt.formatDate(delegate.model.endDateTime, "dd.MM.")))
 
             }
             Label {
                 id: timeLabel
                 anchors.top: dateLabel.bottom
                 anchors.left: parent.left
-                width: dx
+                width: delegate.dx
                 horizontalAlignment: Text.AlignHCenter
                 font.pixelSize: dateLabel.font.pixelSize
                 color: Qt.darker(dateLabel.color, 1.5)
-                text: model.allDay ? ""
-                                   : (Qt.formatTime(model.startDateTime, "hh:mm")
-                                      + (model.duration ? (" - " + Qt.formatTime(model.endDateTime, "hh:mm")) : '' ))
+                text: delegate.model.allDay ? ""
+                                   : (Qt.formatTime(delegate.model.startDateTime, "hh:mm")
+                                      + (delegate.model.duration ? (" - " + Qt.formatTime(delegate.model.endDateTime, "hh:mm")) : '' ))
             }
             Label {
                 id: summaryLabel
@@ -143,7 +146,7 @@ Control {
                 anchors.rightMargin: parent.ListView.view.ScrollIndicator.vertical.width
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                text: model.summary
+                text: delegate.model.summary
                 fontSizeMode: Text.Fit
                 minimumPixelSize: font.pixelSize / 2
                 wrapMode: Text.Wrap

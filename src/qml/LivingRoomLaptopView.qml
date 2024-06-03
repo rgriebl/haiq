@@ -1,13 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Window
-import QtQuick.Controls
-import QtQuick.Layouts
-import HAiQ
 import Qt.labs.platform as Labs
+import HAiQ
+import Ui
 
 
 ApplicationWindow {
@@ -17,7 +13,7 @@ ApplicationWindow {
     flags: Qt.Window | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowSystemMenuHint | Qt.WindowCloseButtonHint
 
     onClosing: { close.accepted = false; hide() }
-    Shortcut { sequence: StandardKey.Cancel; onActivated: hide() }
+    Shortcut { sequence: StandardKey.Cancel; onActivated: root.hide() }
 
     font.family: "Noto Sans"
     font.bold: true
@@ -26,9 +22,6 @@ ApplicationWindow {
     color: 'black'
     background: Image { source: '/icons/bg.jpg'; fillMode: Image.Tile }
 
-    property real defaultRowSpacing: font.pixelSize
-    property real defaultColumnSpacing: font.pixelSize / 2
-
     Labs.SystemTrayIcon {
         id: trayIcon
         icon.source: "/icons/haiq.svg"
@@ -36,7 +29,7 @@ ApplicationWindow {
         tooltip: root.title
         visible: true
 
-        onActivated: {
+        onActivated: function(reason) {
             switch (reason) {
             case Labs.SystemTrayIcon.Trigger:
             case Labs.SystemTrayIcon.DoubleClick:
@@ -50,11 +43,6 @@ ApplicationWindow {
                 break;
             }
         }
-    }
-
-    property Component defaultOverlay: Rectangle {
-        color: Qt.rgba(0, 0, 0, 0.8)
-        Behavior on opacity { NumberAnimation { duration: 200 } }
     }
 
     width: gridLayout.implicitWidth + 2 * gridLayout.anchors.leftMargin

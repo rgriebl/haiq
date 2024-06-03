@@ -1,11 +1,10 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+pragma ComponentBehavior: Bound
 import QtQml.XmlListModel
-import QtQml
+import Ui
+
 
 ScrollView {
     id: root
@@ -55,7 +54,7 @@ ScrollView {
                 if (status == XmlListModel.Error)
                     console.warn("Could not retrieve Google Maps Distance Matrix XML data: " + errorString())
                 if (status == XmlListModel.Ready)
-                    lastUpdate = new Date()
+                    root.lastUpdate = new Date()
                 //console.warn("Got Google Maps Distance Matrix XML data: " + count + "for: " + source)
             }
         }
@@ -80,7 +79,7 @@ ScrollView {
             Label {
                 id: normalHeader
                 anchors.right: parent.right
-                anchors.rightMargin: dx + font.pixelSize
+                anchors.rightMargin: parent.dx + font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 text: "Normal"
                 font.pixelSize: root.font.pixelSize / 2
@@ -96,6 +95,12 @@ ScrollView {
 
         }
         delegate: Item {
+            id: delegate
+            required property string duration
+            required property string durationInTraffic
+            required property bool realtime
+            required property int index
+
             width: parent.width
             height: root.font.pixelSize * 1.5
 
@@ -105,10 +110,10 @@ ScrollView {
                 id: textCol
                 x: 5
                 anchors.verticalCenter: parent.verticalCenter
-                text: model.index < 0 ? '' : Object.keys(root.destinations[model.index])[0]
+                text: delegate.index < 0 ? '' : Object.keys(root.destinations[delegate.index])[0]
             }
             Label {
-                property int minutes: Number(duration) / 60
+                property int minutes: Number(delegate.duration) / 60
 
                 id: normalCol
                 anchors.right: normalUnitCol.left
@@ -119,13 +124,13 @@ ScrollView {
             Label {
                 id: normalUnitCol
                 anchors.right: parent.right
-                anchors.rightMargin: dx + font.pixelSize
+                anchors.rightMargin: delegate.dx + font.pixelSize
                 anchors.baseline: textCol.baseline
                 text: root.unit
                 font.pixelSize: normalCol.font.pixelSize / 2
             }
             Label {
-                property int minutesDelay: (Number(durationInTraffic) / 60) - normalCol.minutesLeft
+                property int minutesDelay: (Number(delegate.durationInTraffic) / 60) - normalCol.minutes
 
                 id: delayedCol
                 anchors.right: delayedUnitCol.left

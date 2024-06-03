@@ -1,18 +1,16 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick.Window
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import HAiQ
+import Ui
 
 
 Pane {
     id: root
     //padding: 0
     background: null
+
+    signal requestShowWeather()
 
     Item {
         id: grid
@@ -158,7 +156,7 @@ Pane {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: Window.window.showWeather()
+                    onClicked: root.requestShowWeather()
                 }
 
                 Component.onCompleted: {

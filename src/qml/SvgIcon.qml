@@ -8,15 +8,11 @@ import QtQuick.Controls.impl
 IconImage {
     id: root
 
-    property string prefix: ''
-    property string icon
-    property real size: font.pixelSize
+    required property real size
     property real scale: 1
 
-    fillMode: Image.PreserveAspectFit
-
     color: palette.text
-//    sourceSize.width: root.size * root.scale
+
+    fillMode: Image.PreserveAspectFit
     sourceSize.height: root.size * root.scale
-    source: root.icon ? Qt.resolvedUrl('/icons/' + root.prefix + root.icon + '.svg') : ''
 }

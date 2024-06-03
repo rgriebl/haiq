@@ -1,11 +1,10 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+pragma ComponentBehavior: Bound
 import QtQml.XmlListModel
-import QtQml
+import Ui
+
 
 Control {
     id: root
@@ -64,7 +63,7 @@ Control {
                 if (status == XmlListModel.Error)
                     console.warn("Could not retrieve EFA XML data: " + errorString() + ")")
                 else if (status == XmlListModel.Ready)
-                    lastUpdate = new Date()
+                    root.lastUpdate = new Date()
 
                 list.positionViewAtBeginning()
             }
@@ -86,7 +85,7 @@ Control {
             Label {
                 id: normalHeader
                 anchors.right: parent.right
-                anchors.rightMargin: dx + font.pixelSize
+                anchors.rightMargin: parent.dx + font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 text: "Abfahrt"
                 font.pixelSize: root.font.pixelSize / 2
@@ -103,6 +102,14 @@ Control {
         }
 
         delegate: Item {
+            required property string line
+            required property string destination
+            required property string realtime
+            required property string datePlanned
+            required property string timePlanned
+            required property string dateExpected
+            required property string timeExpected
+
             id: delegate
             width: ListView.view.width
             height: root.font.pixelSize * 1.5
@@ -132,20 +139,20 @@ Control {
                 id: lineCol
                 x: 5
                 anchors.verticalCenter: parent.verticalCenter
-                text: line
+                text: delegate.line
                 font.bold: true
                 font.pixelSize: textCol.font.pixelSize
                 //topPadding: font.pixelSize / 8
                 //bottomPadding: topPadding
                 leftPadding: font.pixelSize / 3 * 2
                 rightPadding: leftPadding
-                color: sbahnColor(line).fg
+                color: delegate.sbahnColor(delegate.line).fg
 
                 Rectangle {
                     z: -1
                     anchors.fill: parent
                     anchors.margins: parent.font.pixelSize / 8
-                    color: sbahnColor(line).bg
+                    color: delegate.sbahnColor(delegate.line).bg
                     radius: height / 2
                 }
             }
@@ -155,8 +162,8 @@ Control {
                 anchors.leftMargin: font.pixelSize / 2
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
-                anchors.rightMargin: 2 * dx + delayedUnitCol.anchors.rightMargin
-                text: destination.replace(/\(.*\)/, '')
+                anchors.rightMargin: 2 * delegate.dx + delayedUnitCol.anchors.rightMargin
+                text: delegate.destination.replace(/\(.*\)/, '')
                 elide: Text.ElideRight
             }
             Label {
@@ -171,13 +178,13 @@ Control {
             Label {
                 id: normalUnitCol
                 anchors.right: parent.right
-                anchors.rightMargin: dx + delayedUnitCol.anchors.rightMargin
+                anchors.rightMargin: delegate.dx + delayedUnitCol.anchors.rightMargin
                 anchors.baseline: textCol.baseline
                 text: normalCol.minutesLeft <= 0 ? "" : root.unit
                 font.pixelSize: normalCol.font.pixelSize / 2
             }
             Label {
-                property int minutesLate: realtime ? ((delegate.expected - Date.now()) / (60 * 1000) - normalCol.minutesLeft) : -1
+                property int minutesLate: delegate.realtime ? ((delegate.expected - Date.now()) / (60 * 1000) - normalCol.minutesLeft) : -1
 
                 id: delayedCol
                 anchors.right: delayedUnitCol.left

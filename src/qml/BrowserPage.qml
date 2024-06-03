@@ -1,11 +1,11 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+pragma ComponentBehavior: Bound
 import QtWebEngine
 import HAiQ
+import Ui
+
 
 Page {
     id: root
@@ -99,7 +99,7 @@ Page {
                     delegate: Control {
                         id: bookmarkDelegate
 
-                        property var data: modelData
+                        required property var modelData
                         property var url: modelData.url
                         property string title: modelData.title ? modelData.title.replace(/^\[xbs\] /, "") : modelData.url
 
@@ -119,7 +119,7 @@ Page {
                         contentItem: ItemDelegate {
                             Layout.fillWidth: true
 
-                            property bool isFolder: bookmarkDelegate.data.children ? true : false
+                            property bool isFolder: bookmarkDelegate.modelData.children ? true : false
 
                             text: bookmarkDelegate.title
                             // drawer.opened forces a reload of the icons

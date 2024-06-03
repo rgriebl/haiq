@@ -1,11 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Window
 import HAiQ
+import Ui
 
 
 Control {
@@ -26,7 +23,7 @@ Control {
                 'big': { 'color': "#ffff00", 'icon': "email-open" },
             }
 
-            icon: 'mdi/' + stateMap[state].icon
+            name: 'mdi/' + stateMap[state].icon
             color: stateMap[state].color
             Layout.fillWidth: true
             size: 3 * root.font.pixelSize
@@ -48,7 +45,7 @@ Control {
                 batteriesOk = (batteriesState === '' || batteriesState === 'alle OK')
             }
 
-            icon: 'mdi/battery-low'
+            name: 'mdi/battery-low'
             color: batteriesOk ? "#222222" : "#ff0000"
             Layout.fillWidth: true
             size: 3 * root.font.pixelSize

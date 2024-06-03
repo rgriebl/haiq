@@ -1,12 +1,12 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Shapes as Shapes // LinearGradient conflicts with QtGraphicalEffects
-import QtQuick.Controls.Universal
+pragma ComponentBehavior: Bound
 import Qt5Compat.GraphicalEffects
+import QtQuick.Controls.Universal
+import QtQuick.Shapes as Shapes
+import Ui
+
 
 Slider {
     id: control
@@ -26,7 +26,7 @@ Slider {
     property bool showLabel: (sliderType === SceneSlider.HeatingType)
     property bool showIcon: (sliderType === SceneSlider.VolumeType
                              || sliderType === SceneSlider.BrightnessType) && !_showLabelTemporary
-    property var customGradient
+    property Gradient customGradient
     property real scale: 1
 
     live: true
@@ -56,10 +56,10 @@ Slider {
 
         RectangularGlow {
             anchors.fill: bgRect
-            visible: sliderType !== SceneSlider.VolumeType
+            visible: control.sliderType !== SceneSlider.VolumeType
             glowRadius: 5
             spread: 0.5
-            color: Universal.background
+            color: control.Universal.background
             cornerRadius: bgRect.radius + glowRadius
             cached: true
         }
@@ -70,14 +70,14 @@ Slider {
             visible: control.sliderType !== SceneSlider.VolumeType
 
             radius: control.font.pixelSize / 4
-            color: Universal.foreground
+            color: control.Universal.foreground
 
             gradient: {
                 switch (control.sliderType) {
                 case SceneSlider.BrightnessType: return brightnessGradient
                 case SceneSlider.RGBType:        return rgbGradient
                 case SceneSlider.HeatingType:    return heatingGradient
-                case SceneSlider.CustomType:     return customGradient
+                case SceneSlider.CustomType:     return control.customGradient
                 default:                         return null
                 }
             }
@@ -116,13 +116,13 @@ Slider {
             layer.effect: Glow {
                 radius: 10
                 spread: 0.2
-                color: Universal.background
+                color: control.Universal.background
                 cached: true
             }
 
             property real radius: control.font.pixelSize / 4
             Shapes.ShapePath {
-                fillColor: Universal.foreground
+                fillColor: control.Universal.foreground
                 fillGradient: Shapes.LinearGradient {
                     id: volumeGradient
                     x1: 0; x2: triangle.width
@@ -175,7 +175,7 @@ Slider {
             anchors.fill: bg
             glowRadius: 5
             spread: 0.5
-            color: Universal.background
+            color: control.Universal.background
             cornerRadius: bg.radius + glowRadius
             cached: true
         }
@@ -193,8 +193,8 @@ Slider {
             Behavior on opacity { NumberAnimation { duration: 500 } }
             text: control.valueToHandleText(control.value)
             style: Text.Outline
-            styleColor: Qt.rgba(Universal.background.r, Universal.background.g, Universal.background.b, 0.5)
-            color: Universal.foreground
+            styleColor: Qt.rgba(control.Universal.background.r, control.Universal.background.g, control.Universal.background.b, 0.5)
+            color: control.Universal.foreground
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             textFormat: Text.RichText
@@ -206,8 +206,9 @@ Slider {
             Behavior on opacity { NumberAnimation { duration: 500 } }
             source: control.sliderType === SceneSlider.VolumeType ? '/icons/mdi/volume-high'
                                                                   : '/icons/mdi/brightness-5'
-            color: Universal.foreground
+            color: control.Universal.foreground
             scale: control.scale
+            size: control.font.pixelSize
         }
     }
     Tracer { }

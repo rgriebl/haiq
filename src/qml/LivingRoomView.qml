@@ -1,14 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Window
-import QtQuick.Controls
-import QtQuick.Layouts
 import HAiQ
-import QtQuick.Controls.Universal
-import Qt.labs.settings
+import Ui
+
 
 TabletView {
     id: root
@@ -19,14 +14,6 @@ TabletView {
     font.family: "Noto Sans"
     font.bold: true
     font.pixelSize: height / 27
-
-    property real defaultRowSpacing: font.pixelSize // / 2
-    property real defaultColumnSpacing: font.pixelSize / 4
-
-    property Component defaultOverlay: Rectangle {
-        color: Qt.rgba(0, 0, 0, 0.8)
-        Behavior on opacity { NumberAnimation { duration: 200 } }
-    }
 
     visible: true
 
@@ -59,39 +46,43 @@ TabletView {
                 anchors.centerIn: parent
                 rows: 1
                 columns: children.length
-                rowSpacing: defaultRowSpacing
-                columnSpacing: defaultColumnSpacing
+                rowSpacing: root.font.pixelSize
+                columnSpacing: rowSpacing / 4
 
-                SceneButton {
+                component CheckButton : SceneButton {
+                    required property int index
+                }
+
+                CheckButton {
                     id: livingRoomButton
-                    Layout.margins: defaultColumnSpacing
+                    Layout.margins: buttonLayout.columnSpacing
                     icon.source: "/icons/oa/light_light"
                     text: "Wohnzimmer"
                     scale: 3
                     checkable: true
                     checked: true
 
-                    property int index: 0
+                    index: 0
                 }
-                SceneButton {
+                CheckButton {
                     id: livingRoomButton2
-                    Layout.margins: defaultColumnSpacing
+                    Layout.margins: buttonLayout.columnSpacing
                     icon.source: "/icons/oa/scene_living"
                     text: "Wohnzimmer 2"
                     scale: 3
                     checkable: true
 
-                    property int index: 1
+                    index: 1
                 }
-                SceneButton {
+                CheckButton {
                     id: terraceButton
-                    Layout.margins: defaultColumnSpacing
+                    Layout.margins: buttonLayout.columnSpacing
                     icon.source: "/icons/oa/scene_terrace"
                     text: "Terrasse"
                     scale: 3
                     checkable: true
 
-                    property int index: 2
+                    index: 2
                 }
             }
             Timer {
@@ -105,7 +96,7 @@ TabletView {
                 buttons: [ livingRoomButton, livingRoomButton2, terraceButton ]
                 exclusive: true
                 onCheckedButtonChanged: {
-                    swipeView.currentIndex = checkedButton.index
+                    swipeView.currentIndex = (checkedButton as CheckButton).index
                     //mainStack.replace(null, checkedButton.page)
 
                     if (checkedButton !== livingRoomButton)

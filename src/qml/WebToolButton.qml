@@ -56,13 +56,13 @@ ToolButton {
     Binding {
         target: root
         property: "icon.width"
-        value: font.pixelSize * 2
+        value: root.font.pixelSize * 2
         delayed: true
     }
     Binding {
         target: root
         property: "icon.height"
-        value: font.pixelSize * 2
+        value: root.font.pixelSize * 2
         delayed: true
     }
     display: AbstractButton.IconOnly

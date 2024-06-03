@@ -1,11 +1,7 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Controls.Universal
-import HAiQ
+import Ui
 
 
 Page {
@@ -21,7 +17,7 @@ Page {
         }
         contentItem: RowLayout {
             anchors.fill: parent
-            spacing: font.pixelSize  / 3
+            spacing: root.font.pixelSize  / 3
             
             SceneButton {
                 icon.name: 'fa/angle-left-solid'

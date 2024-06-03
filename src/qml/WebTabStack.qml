@@ -47,10 +47,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+pragma ComponentBehavior: Bound
 import QtQml.Models
 import QtQuick
-import QtQuick.Controls
+import QtWebEngine
 
 Rectangle {
     id: root
@@ -58,7 +58,7 @@ Rectangle {
     signal closeRequested(int index)
     signal drawerRequested
 
-    property QtObject profile
+    property WebEngineProfile profile
 
     property int freezeDelay
     property int discardDelay

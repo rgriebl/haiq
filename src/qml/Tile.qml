@@ -1,9 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Universal
+import Ui
+
 
 Page {
     id: root
@@ -18,7 +17,7 @@ Page {
     background: Rectangle {
         anchors.fill: parent
         radius: root.font.pixelSize / 1.5
-        color: Universal.background
+        color: root.Universal.background
     }
 
     header: Label {
@@ -41,15 +40,15 @@ Page {
             verticalAlignment: Text.AlignVCenter
         }
         Rectangle {
-            anchors.top: header.bottom
+            anchors.top: headerLabel.bottom
             anchors.topMargin: -3
             width: parent.width
             height: 1
             gradient: Gradient {
                 orientation: Qt.Horizontal
-                GradientStop { position:   0; color: Universal.background }
+                GradientStop { position:   0; color: root.Universal.background }
                 GradientStop { position: 0.5; color: root.headerColor }
-                GradientStop { position:   1; color: Universal.background }
+                GradientStop { position:   1; color: root.Universal.background }
             }
         }
     }

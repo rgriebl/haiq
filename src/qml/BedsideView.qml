@@ -1,11 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Controls.Universal
 import HAiQ
+import Ui
 
 
 TabletView {
@@ -18,11 +15,6 @@ TabletView {
     font.weight: Font.Black
     font.pixelSize: height / 10
 
-    property Component defaultOverlay: Rectangle {
-        color: Qt.rgba(0, 0, 0, 0.8)
-        Behavior on opacity { NumberAnimation { duration: 200 } }
-    }
-
     color: 'black'
     background: null
 
@@ -32,20 +24,27 @@ TabletView {
         id: mainStack
         anchors.fill: parent
 
-        initialItem: BedsidePage { }
+        initialItem: BedsidePage {
+            mainStack: mainStack
+            blindsEntity: Config.coverEntity || "cover.schlafzimmer_rollladen"
+            ceilingLightEntity: Config.lights[0].entity || "switch.schlafzimmer_licht"
+            ceilingLightIcon: Config.lights[0].icon || 'fa/lightbulb-solid'
+            wardrobeLightEntity: Config.lights[1].entity || "switch.schlafzimmer_schranklicht"
+            wardrobeLightIcon: Config.lights[1].icon || 'fa/tshirt-solid'
+        }
     }
 
     MouseArea {
         anchors.fill: parent
         z: -1
-        onDoubleClicked: ScreenBrightness.blank()
+        onDoubleClicked: ScreenBrightness.blank = true
     }
 
     Connections {
-        target: incomingCall
+        target: root.incomingCall
         function onVisibleChanged() {
-            if (incomingCall.visible)
-                ScreenBrightness.unblank()
+            if (root.incomingCall.visible)
+                ScreenBrightness.blank = false
         }
     }
 
@@ -53,7 +52,7 @@ TabletView {
         target: SqueezeBoxServer.thisPlayer
         function onAlarmSounding(sounding) {
             if (sounding)
-                ScreenBrightness.unblank()
+                ScreenBrightness.blank = false
         }
     }
 

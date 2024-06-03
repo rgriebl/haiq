@@ -1,11 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Window
+pragma ComponentBehavior: Bound
 import HAiQ
+import Ui
 
 
 Popup {
@@ -14,10 +12,10 @@ Popup {
     property string entity
 
     modal: true
-    Overlay.modal: defaultOverlay
+    Overlay.modal: DarkOverlay { }
     background: Rectangle {
         color: Qt.rgba(28/255, 28/255, 30/255)
-        radius: parent.font.pixelSize
+        radius: root.font.pixelSize
     }
     padding: font.pixelSize
     anchors.centerIn: Overlay.overlay
@@ -47,19 +45,21 @@ Popup {
     Timer {
         interval: 5 * 60 * 1000
         running: root.opened
-        onTriggered: close()
+        onTriggered: root.close()
     }
 
     ListView {
         anchors.fill: parent
         model: root.favorites
-        spacing: font.pixelSize / 4
+        spacing: root.font.pixelSize / 4
 
         ScrollIndicator.vertical: ScrollIndicator { }
 
         delegate: RowLayout {
+            id: delegate
+            required property var modelData
             width: ListView.view.width
-            spacing: font.pixelSize / 2
+            spacing: root.font.pixelSize / 2
 
             SceneButton {
                 icon.name: 'fa/play-solid'
@@ -68,13 +68,13 @@ Popup {
                                                root.entity,
                                                {
                                                    command: 'favorites',
-                                                   parameters: [ 'playlist', 'play', 'item_id:' + modelData.id ]
+                                                   parameters: [ 'playlist', 'play', 'item_id:' + delegate.modelData.id ]
                                                })
                 }
             }
             Label {
                 Layout.fillWidth: true
-                text: modelData.name
+                text: delegate.modelData.name
                 elide: Text.ElideRight
             }
         }

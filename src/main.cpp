@@ -25,6 +25,7 @@
 #include <QNetworkReply>
 #include <QEventLoop>
 #include <QSaveFile>
+#include <QProcess>
 #include <QQuickStyle>
 
 #include "qtsingleapplication/qtsingleapplication.h"
@@ -245,6 +246,7 @@ int main(int argc, char *argv[])
         qWarning() << dit.next();
 
     QQmlApplicationEngine engine;
+    engine.setOutputWarningsToStandardError(true);
     engine.addImportPath(qmlPath);
 
     QQmlFileSelector *selector = new QQmlFileSelector(&engine);
@@ -387,12 +389,18 @@ int main(int argc, char *argv[])
 #endif
 
     const auto ros = engine.rootObjects();
+    if (ros.isEmpty()) {
+        qCritical() << "Failed to load" << baseUrl + qmlFile;
+        return 1;
+    }
     for (auto ro : ros) {
         if ((window = qobject_cast<QQuickWindow *>(ro))) {
             if (rotation)
                 window->contentItem()->setRotation(rotation);
             if (isFullscreen)
                 window->showFullScreen();
+            else
+                window->show();
 
             qDebug() << "Device pixel ratio:" << window->devicePixelRatio();
 
@@ -471,5 +479,12 @@ int main(int argc, char *argv[])
 #endif
         }
     }
-    return app.exec();
+    int code = app.exec();
+#if defined(Q_OS_LINUX) && QT_CONFIG(process)
+    if (code == 42) { // reboot
+        QProcess::startDetached(u"sudo"_qs, { u"reboot"_qs });
+        code = 0;
+    }
+#endif
+    return code;
 }

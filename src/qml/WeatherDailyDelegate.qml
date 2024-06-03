@@ -1,11 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Controls.Universal
+pragma ComponentBehavior: Bound
+import Ui
+
 
 Tile {
     id: root
@@ -55,6 +53,7 @@ Tile {
         }
 
         Rectangle {
+            id: tempBox
             Layout.verticalStretchFactor: 3 // should really be 1/2, but that results in 1/3
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -68,11 +67,11 @@ Tile {
                 Rectangle {
                     required property int index
                     x: 1
-                    width: parent.width - 2
+                    width: tempBox.width - 2
                     height: 1
-                    color: parent.color
-                    border.color: parent.border.color
-                    y: (index + 1) * 0.166 * parent.height
+                    color: tempBox.color
+                    border.color: tempBox.border.color
+                    y: (index + 1) * 0.166 * tempBox.height
                 }
             }
 
@@ -123,6 +122,7 @@ Tile {
             font.pixelSize: root.font.pixelSize * 1.75
         }
         Rectangle {
+            id: precipBox
             Layout.verticalStretchFactor: 2 // should really be 1/2, but that results in 1/3
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -133,11 +133,11 @@ Tile {
             radius: 5
 
             Rectangle {
-                width: parent.width
-                anchors.bottom: parent.bottom
-                height: parent.height / 100 * root.precipitation
-                color: Universal.accent
-                radius: parent.radius
+                width: precipBox.width
+                anchors.bottom: precipBox.bottom
+                height: precipBox.height / 100 * root.precipitation
+                color: precipBox.Universal.accent
+                radius: precipBox.radius
             }
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -163,7 +163,7 @@ Tile {
 
             horizontalAlignment: Text.AlignHCenter
 
-            text: root.precipitation ? addUnit(root.precipitation, "l") : "-"
+            text: root.precipitation ? root.addUnit(root.precipitation, "l") : "-"
             font.pixelSize: root.font.pixelSize
             opacity: root.precipitation_probability / 100
         }

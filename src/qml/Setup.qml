@@ -1,10 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Window
-import QtQuick.Controls
-import QtQuick.Layouts
+pragma ComponentBehavior: Bound
+import Ui
 
 
 ApplicationWindow {
@@ -20,7 +18,7 @@ ApplicationWindow {
 
     ColumnLayout {
         id: layout
-        spacing: font.pixelSize / 2
+        spacing: root.font.pixelSize / 2
         anchors.fill: parent
         anchors.margins: (root.visibility == Window.Windowed) ? 2 * spacing : 12 * spacing
 
@@ -75,12 +73,13 @@ ApplicationWindow {
 
                 model: SetupProperties.possibleVariants
                 delegate: RadioDelegate {
+                    required property var modelData
                     width: ListView.view.width
                     text: modelData
-                    checked: selectedVariant === modelData
+                    checked: root.selectedVariant === modelData
                     onToggled: {
                         if (checked)
-                            selectedVariant = modelData
+                            root.selectedVariant = modelData
                     }
                 }
                 ScrollIndicator.vertical: ScrollIndicator { active: true }
@@ -89,9 +88,9 @@ ApplicationWindow {
     }
     footer: DialogButtonBox {
         standardButtons: DialogButtonBox.Save | DialogButtonBox.Cancel
-        onClicked: {
+        onClicked: function(button) {
             if (button === standardButton(DialogButtonBox.Save)) {
-                SetupProperties.selectedVariant = selectedVariant
+                SetupProperties.selectedVariant = root.selectedVariant
                 SetupProperties.configHostname = configHostname.text
                 SetupProperties.configToken = configToken.text
             }

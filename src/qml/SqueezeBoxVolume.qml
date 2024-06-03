@@ -1,12 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQml
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Window
+pragma ComponentBehavior: Bound
 import HAiQ
+import Ui
 
 
 Popup {
@@ -15,10 +12,10 @@ Popup {
     property var entities: []
 
     modal: true
-    Overlay.modal: defaultOverlay
+    Overlay.modal: DarkOverlay { }
     background: Rectangle {
         color: Qt.rgba(28/255, 28/255, 30/255)
-        radius: parent.font.pixelSize
+        radius: root.font.pixelSize
     }
     padding: font.pixelSize
     anchors.centerIn: Overlay.overlay
@@ -28,7 +25,7 @@ Popup {
     Timer {
         interval: 5 * 60 * 1000
         running: root.opened
-        onTriggered: close()
+        onTriggered: root.close()
     }
 
     property var volumeModel: []
@@ -105,14 +102,15 @@ Popup {
 
     GridLayout {
         anchors.fill: parent
-        rowSpacing: font.pixelSize * 0.5
+        rowSpacing: root.font.pixelSize * 0.5
         columnSpacing: rowSpacing
         columns: 3
-        rows: volumeModel.length
+        rows: root.volumeModel.length
 
         Repeater {
             model: parent.rows
             Label {
+                required property int index
                 Layout.row: index
                 Layout.column: 0
                 Layout.fillWidth: true
@@ -122,13 +120,17 @@ Popup {
         Repeater {
             model: parent.rows
             SceneSlider {
+                required property int index
+
                 id: volumeSlider
                 Layout.row: index
                 Layout.column: 1
                 Layout.fillWidth: true
+                Layout.horizontalStretchFactor: 4
 
                 sliderType: SceneSlider.VolumeType
                 from: 0; to: 100; stepSize: 1
+                scale: 2
 
                 property real exponent: 1 // 2.2
 
@@ -140,9 +142,12 @@ Popup {
         Repeater {
             model: parent.rows
             SceneButton {
+                required property int index
                 Layout.row: index
                 Layout.column: 2
                 icon.name: 'mdi/volume-off'
+                font.pixelSize: root.font.pixelSize * 2
+                scale: 2
                 highlighted: root.volumeModel[index].master ? root.volumeModel[index].muted
                                                             : !root.volumeModel[index].synced
                 onClicked: {

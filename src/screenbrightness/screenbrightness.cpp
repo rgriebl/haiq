@@ -359,11 +359,6 @@ void ScreenBrightness::blank(bool on)
     }
 }
 
-void ScreenBrightness::unblank()
-{
-    blank(false);
-}
-
 bool ScreenBrightness::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched && event && isScreenSaverActive()) {

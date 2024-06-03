@@ -1,8 +1,7 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
+import Ui
 
 
 Control {
@@ -43,7 +42,7 @@ Control {
 
         SvgIcon {
             id: arrow
-            icon: 'mdi/refresh'
+            name: 'mdi/refresh'
             size: root.font.pixelSize * 2
             transformOrigin: Item.Center
             rotation: root.pullProgress * 360

@@ -1,9 +1,10 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Shapes as Shapes
 import Qt5Compat.GraphicalEffects
+import QtQuick.Shapes as Shapes
+import HAiQ
+import Ui
 
 
 Item {
@@ -42,11 +43,18 @@ Item {
         anchors.fill: parent
         visible: false
         preferredRendererType: Shapes.Shape.CurveRenderer
+
+        Component  {
+            id: pcurve
+            PathCurve { }
+        }
+
         Shapes.ShapePath {
             id: path
             strokeColor: "white"
             strokeWidth: 5
             fillColor: "transparent"
+            capStyle: Shapes.ShapePath.RoundCap
 
             PathMove { }
             Component.onCompleted: {

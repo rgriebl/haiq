@@ -38,6 +38,7 @@ public:
     qreal minimumBrightness() const;
     qreal maximumBrightness() const;
     bool isBlanked() const;
+    void blank(bool on = true);
 
 public slots:
     void setSetScreenSaverActive(bool screenSaverActive);
@@ -48,9 +49,6 @@ public slots:
     void setDimBrightness(qreal dimBrightness);
     void setMinimumBrightness(qreal minimumBrightness);
     void setMaximumBrightness(qreal maximumBrightness);
-
-    void blank(bool on = true);
-    void unblank();
 
 signals:
     void screenSaverActiveChanged(bool screenSaverActive);

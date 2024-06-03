@@ -1,11 +1,9 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
+pragma ComponentBehavior: Bound
 import QtQuick.Controls.Universal
-import QtQuick.Window
+import Ui
 
 
 Drawer {
@@ -13,10 +11,10 @@ Drawer {
 
     implicitHeight: parent.height
     implicitWidth: mainLayout.implicitWidth
-    Overlay.modal: defaultOverlay
+    Overlay.modal: DarkOverlay { }
 
-    property alias icon: headerIcon
-    property string iconTitle: Qt.application.displayName
+    property string iconName
+    property string iconTitle: Qt.application.name
     property string iconSubtitle: "Version " + Qt.application.version
     property alias items: listView.model
     property alias index: listView.currentIndex
@@ -30,7 +28,7 @@ Drawer {
             height: parent.height
             anchors.right: parent.right
             anchors.rightMargin: -1
-            color: Universal.foreground
+            color: root.Universal.foreground
             opacity: 0.4
         }
     }
@@ -47,8 +45,9 @@ Drawer {
             Layout.margins: spacing
 
             SvgIcon {
-                id: headerIcon
+                name: root.iconName
                 size: root.font.pixelSize * 2
+                Tracer { }
             }
 
             ColumnLayout {
@@ -57,13 +56,13 @@ Drawer {
                 Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
 
                 Label {
-                    text: iconTitle
+                    text: root.iconTitle
                     font.bold: true
                 }
 
                 Label {
                     opacity: 0.7
-                    text: iconSubtitle
+                    text: root.iconSubtitle
                     font.pixelSize: root.font.pixelSize * 0.7
                 }
             }
@@ -80,21 +79,23 @@ Drawer {
             function delegateHeight(index) {
                 let d = model.get(index)
                 if (!d.spacer) {
-                    return font.pixelSize * 2
-                } else if (d.space && !d.stretch) {
-                    return font.pixelSize * 0.5
+                    return root.font.pixelSize * 2
+                } else if (d.spacer && !d.stretch) {
+                    return root.font.pixelSize * 0.5
                 } else {
                     let h = height
                     for (let i = 0; i < count; ++i) {
                         if (i !== index)
                             h -= delegateHeight(i)
                     }
-                    return Math.max(h, font.pixelSize * 0.5)
+                    return Math.max(h, root.font.pixelSize * 0.5)
                 }
             }
 
             delegate: ItemDelegate {
                 id: delegate
+                required property int index
+                required property var model
 
                 width: ListView.view.width
                 highlighted: !model.spacer && ListView.isCurrentItem
@@ -103,36 +104,36 @@ Drawer {
                                         || (ListView.view.model.get(index + 1).spacer)
 
                 background: Item {
-                    visible: !model.spacer
+                    visible: !delegate.model.spacer
                     Rectangle {
                         anchors.fill: parent
                         anchors.topMargin: 1
                         anchors.bottomMargin: 1
-                        color: Universal.foreground
+                        color: root.Universal.foreground
                         opacity: delegate.pressed ? 0.4 : 0.11
                     }
                     Rectangle {
                         height: 1
                         width: parent.width
                         anchors.top: parent.top
-                        color: Universal.foreground
+                        color: root.Universal.foreground
                         opacity: 0.4
                     }
                     Rectangle {
                         height: 1
                         width: parent.width
                         anchors.bottom: parent.bottom
-                        color: Universal.foreground
+                        color: root.Universal.foreground
                         opacity: delegate.lastItem ? 0.4 : 0
                     }
                 }
 
                 Binding on icon.name {
-                    value: model.iconName
-                    when: !model.spacer || true
+                    value: delegate.model.iconName
+                    when: !delegate.model.spacer || true
                 }
 
-                height: ListView.view.delegateHeight(index)
+                height: listView.delegateHeight(index)
 
                 text: model.text
 

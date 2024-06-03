@@ -1,15 +1,13 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Window
 import Qt.labs.platform as Labs
 import HAiQ
+import Ui
+
 
 ApplicationWindow {
-    id: window
+    id: root
     title: "Druckerstatus"
     visible: false
 
@@ -22,7 +20,7 @@ ApplicationWindow {
         if (!offline && !idle && line != '' && trayIcon.supportsMessages) {
             trayIcon.showMessage("Druckerstatus",
                                  line,
-                                 SystemTrayIcon.Information, 10 * 1000)
+                                 Labs.SystemTrayIcon.Information, 10 * 1000)
         }
     }
 
@@ -36,11 +34,11 @@ ApplicationWindow {
 
     Labs.SystemTrayIcon {
         id: trayIcon
-        icon.source: "/icons/printer" + (offline ? "-off" : (idle ? "" : "-alert")) + ".svg"
-        tooltip: window.title + ":\n" + (offline ? "Ausgeschalten" : line)
+        icon.source: "/icons/printer" + (root.offline ? "-off" : (root.idle ? "" : "-alert")) + ".svg"
+        tooltip: root.title + ":\n" + (root.offline ? "Ausgeschalten" : root.line)
         visible: true
 
-        onActivated: {
+        onActivated: function(reason) {
             switch (reason) {
             case Labs.SystemTrayIcon.Trigger:
             case Labs.SystemTrayIcon.DoubleClick:
@@ -77,8 +75,12 @@ ApplicationWindow {
                 interval: 500
                 running: false
                 repeat: false
-                property var callback
-                onTriggered: callback()
+                onTriggered: {
+                    trayIcon.showMessage("Anruf",
+                                         "Eingehender Anruf von\n\n" + incoming.caller,
+                                         Labs.SystemTrayIcon.Information, 20 * 1000)
+
+                }
             }
             Component.onCompleted: {
                 HomeAssistant.subscribe(entity, function(state, attributes) {
@@ -91,16 +93,8 @@ ApplicationWindow {
             }
 
             onStatusChanged: {
-                if (status === 'ringing' && trayIcon.supportsMessages) {
-                    if (!delay.running) {
-                        delay.callback = function() {
-                            trayIcon.showMessage("Anruf",
-                                                 "Eingehender Anruf von\n\n" + caller,
-                                                 SystemTrayIcon.Information, 20 * 1000)
-                        }
-                        delay.running = true
-                    }
-                }
+                if (status === 'ringing' && trayIcon.supportsMessages)
+                    delay.running = true
             }            
         }
     }

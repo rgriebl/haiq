@@ -1,9 +1,8 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import HAiQ
+import Ui
 
 
 StackPage {
@@ -30,6 +29,8 @@ StackPage {
                 id: delegateComponent
 
                 Label {
+                    required property int index
+                    required property var modelData
                     id: label
                     property real d: Tumbler.displacement / (Tumbler.tumbler.visibleItemCount / 2)
 

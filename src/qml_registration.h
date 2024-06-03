@@ -56,7 +56,7 @@ class ForeignCalendar
 {
     Q_GADGET
     QML_FOREIGN(Calendar)
-    QML_NAMED_ELEMENT(Calendar)
+    QML_NAMED_ELEMENT(MainCalendar)
     QML_SINGLETON
 public:
     static Calendar *create(QQmlEngine *, QJSEngine *)
