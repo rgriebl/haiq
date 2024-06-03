@@ -126,13 +126,13 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents);
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // for webengine
 #if defined(Q_OS_WINDOWS)
-//    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Floor);
 #endif
 
 #if defined(HAIQ_DESKTOP)
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication app(argc, argv);
 #else
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor);
     QGuiApplication app(argc, argv);
 #endif
     QQuickWindow *window = nullptr;
@@ -256,9 +256,9 @@ int main(int argc, char *argv[])
         showParserMessage(e.errorString() + u".\n", ErrorMessage);
     }
 
-    QDirIterator dit(u":/"_qs, QDirIterator::Subdirectories);
-    while (dit.hasNext())
-        qWarning() << dit.next();
+    // QDirIterator dit(u":/"_qs, QDirIterator::Subdirectories);
+    // while (dit.hasNext())
+    //     qWarning() << dit.next();
 
     QQmlApplicationEngine engine;
     engine.setOutputWarningsToStandardError(true);

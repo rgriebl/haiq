@@ -114,6 +114,7 @@ TabletView {
             id: swipeView
             interactive: false
             orientation: Qt.Vertical
+            clip: true
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.leftMargin: 25
