@@ -16,11 +16,16 @@ target_sources(${PROJECT_NAME} PUBLIC
     exception.h
     exception.cpp
 
-    qtsingleapplication/qtsingleapplication.cpp
-    qtsingleapplication/qtlocalpeer.cpp
-    qtsingleapplication/qtsingleapplication.h
+    qtsingleapplication/qtlockedfile.h
+    qtsingleapplication/qtlockedfile.cpp
     qtsingleapplication/qtlocalpeer.h
+    qtsingleapplication/qtlocalpeer.cpp
 )
+if (WIN32)
+    target_sources(${PROJECT_NAME} PUBLIC qtsingleapplication/qtlockedfile_win.cpp)
+else()
+    target_sources(${PROJECT_NAME} PUBLIC qtsingleapplication/qtlockedfile_unix.cpp)
+endif()
 
 qt_add_library(haiq_module STATIC
     screenbrightness/screenbrightness.h

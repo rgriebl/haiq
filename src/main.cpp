@@ -1,7 +1,11 @@
 // Copyright (C) 2017-2024 Robert Griebl
 // SPDX-License-Identifier: GPL-3.0-only
 
-#include <QGuiApplication>
+#if defined(HAIQ_DESKTOP)
+#  include <QApplication>
+#else
+#  include <QGuiApplication>
+#endif
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQmlPropertyMap>
@@ -28,7 +32,7 @@
 #include <QProcess>
 #include <QQuickStyle>
 
-#include "qtsingleapplication/qtsingleapplication.h"
+#include "qtsingleapplication/qtlocalpeer.h"
 #include "homeassistant/homeassistant.h"
 #include "screenbrightness/screenbrightness.h"
 #include "squeezebox/squeezeboxserver.h"
@@ -125,26 +129,37 @@ int main(int argc, char *argv[])
 //    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Floor);
 #endif
-    QtSingleApplication app(QCoreApplication::applicationName(), argc, argv);
 
+#if defined(HAIQ_DESKTOP)
+    QApplication app(argc, argv);
+#else
+    QGuiApplication app(argc, argv);
+#endif
     QQuickWindow *window = nullptr;
-    bool anotherInstanceAvailable = app.isRunning();
 
-    QObject::connect(&app, &QtSingleApplication::messageReceived,
-                     &app, [&window](const QString &msg) {
+    auto notifyOtherInstance = [&app, &window]() -> bool {
+        auto peer = new QtLocalPeer(&app, QCoreApplication::applicationName());
+        QObject::connect(peer, &QtLocalPeer::messageReceived,
+                         &app, [&window](const QString &msg) {
+            qDebug() << "Received an event from another instance: window="
+                     << static_cast<void*>(window) << "; msg=" << msg;
 
-        qDebug() << "Received an event from another instance: window="
-                 << static_cast<void*>(window) << "; msg=" << msg;
-        if ((msg == u"show") && window) {
-            if (window->isVisible()) {
-                window->close();
-            } else {
-                window->show();
-                window->raise();
-                window->requestActivate();
+            if ((msg == u"show") && window) {
+                if (window->isVisible()) {
+                    window->close();
+                } else {
+                    window->show();
+                    window->raise();
+                    window->requestActivate();
+                }
             }
-        }
-    });
+        });
+
+        if (peer->isClient())
+            return peer->sendMessage(u"show"_qs, 5000);
+
+        return false;
+    };
 
     QString basePath = u":/"_qs;
     if (!basePath.endsWith(u'/'))
@@ -178,9 +193,9 @@ int main(int argc, char *argv[])
         clp.showHelp();
 
     // trigger existing instance and quit if there is one
-    if (anotherInstanceAvailable && !clp.isSet(u"new-instance"_qs)) {
+    if (clp.isSet(u"new-instance"_qs) && notifyOtherInstance()) {
         qDebug() << "Activating other instance";
-        return app.sendMessage(u"show"_qs) ? 0 : 3;
+        return 0;
     }
 
     QString configHost = clp.value(u"config-host"_qs);
