@@ -284,7 +284,7 @@ void ICalendarParser::parseValue()
         //    throw createException("invalid URI");
         m_propertyValue = url;
     } else if (valueType == u"UTC-OFFSET") {
-        QRegularExpression re(u"^[+-](\\d\\d)(\\d\\d)(\\d\\d)?$"_qs);
+        static const QRegularExpression re(u"^[+-](\\d\\d)(\\d\\d)(\\d\\d)?$"_qs);
         auto match = re.match(value);
         if (match.hasMatch()) {
             int hh = match.captured(1).toInt();
@@ -357,6 +357,16 @@ QDateTime ICalendarParser::parseDateTime(const QString &dtString, const QString 
             QByteArray winTzId = QTimeZone::windowsIdToDefaultIanaId(tzId.toLatin1());
             if (!winTzId.isEmpty())
                 tz = QTimeZone(winTzId);
+        }
+        if (!tz.isValid() && tzId.startsWith(u"(UTC")) {
+            static const QRegularExpression re(u"^\\(UTC([+-])(\\d\\d):(\\d\\d)\\)$"_qs);
+            auto match = re.match(tzId.left(11));
+            if (match.hasMatch()) {
+                int sign = (match.captured(1) == u"+") ? 1 : -1;
+                int hh = match.captured(2).toInt();
+                int mm = match.captured(3).toInt();
+                tz = QTimeZone(sign * 60 * (hh * 60 + mm));
+            }
         }
         if (!tz.isValid())
             throw createException("unknown timezone");
