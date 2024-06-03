@@ -9,8 +9,6 @@
 #include <QDateTime>
 #include <QFutureWatcher>
 
-#include "icalendarparser.h"
-
 QT_FORWARD_DECLARE_CLASS(QNetworkAccessManager)
 QT_FORWARD_DECLARE_CLASS(QNetworkReply)
 QT_FORWARD_DECLARE_CLASS(QTimer)
@@ -23,7 +21,8 @@ class Calendar : public QAbstractListModel
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    explicit Calendar(const QUrl &url, QObject *parent = nullptr);
+    static Calendar *instance();
+    static Calendar *createInstance(const QUrl &url, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
@@ -44,6 +43,7 @@ signals:
     void countChanged();
 
 private:
+    explicit Calendar(const QUrl &url, QObject *parent = nullptr);
     void handleNetworkReply(QNetworkReply *reply);
 
 private:
@@ -68,6 +68,8 @@ private:
 
     QVector<Entry> parseNetworkReply(const QByteArray &data);
 
+    static Calendar *s_instance;
+
     friend class UpcomingCalendarEntries;
 };
 
@@ -80,8 +82,6 @@ class UpcomingCalendarEntries : public QSortFilterProxyModel
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
 
 public:
-    static void registerQmlTypes();
-
     UpcomingCalendarEntries(QObject *parent = nullptr);
 
     Calendar *calendar() const;

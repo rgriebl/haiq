@@ -17,8 +17,6 @@
 #include <functional>
 #include <optional>
 
-QT_FORWARD_DECLARE_CLASS(QQmlEngine)
-
 
 using StringMap = QMap<QString, QString>;
 
@@ -157,8 +155,6 @@ class SqueezeBoxServer : public QObject
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
 
 public:
-    static void registerQmlTypes();
-
     static SqueezeBoxServer *instance();
     static SqueezeBoxServer *createInstance(const QString &serverHost, int serverPort = 9090, QObject *parent = nullptr);
 
@@ -210,7 +206,6 @@ private:
 
     QString m_serverHost;
     quint16 m_serverPort;
-    QPointer<QQmlEngine> m_engine;
     QTcpSocket m_listen;
     QTcpSocket m_command;
     QTimer m_reconnectTimer;

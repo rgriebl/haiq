@@ -111,7 +111,7 @@ void ICalendarParser::parseName()
     for (; m_pos < m_line.length(); ++m_pos) {
         QChar c = m_line.at(m_pos);
 
-        if (c.isLetterOrNumber() || c == '-')
+        if (c.isLetterOrNumber() || c == u'-')
             m_propertyName += c;
         else
             break;
@@ -126,7 +126,7 @@ void ICalendarParser::parseName()
 void ICalendarParser::parseParameters()
 {
     // start of param
-    while ((m_pos < m_line.length()) && m_line[m_pos] == ';') {
+    while ((m_pos < m_line.length()) && m_line[m_pos] == u';') {
         ++m_pos;
         parseParameter();
     }
@@ -136,13 +136,13 @@ void ICalendarParser::parseParameter()
 {
     parseParameterName();
 
-    if ((m_pos >= m_line.length()) || m_line[m_pos] != '=')
+    if ((m_pos >= m_line.length()) || m_line[m_pos] != u'=')
         throw createException("parameter name doesn't end with '='");
 
     do {
         ++m_pos;
         parseParameterValue();
-    } while ((m_pos < m_line.length()) && m_line[m_pos] == ',');
+    } while ((m_pos < m_line.length()) && m_line[m_pos] == u',');
 
 
     auto param = qMakePair(m_parameterName.toUpper(), m_parameterValues);
@@ -164,7 +164,7 @@ void ICalendarParser::parseParameterName()
     for (; m_pos < m_line.length(); ++m_pos) {
         QChar c = m_line.at(m_pos);
 
-        if (c.isLetterOrNumber() || c == '-')
+        if (c.isLetterOrNumber() || c == u'-')
             m_parameterName += c;
         else
             break;
@@ -178,17 +178,17 @@ void ICalendarParser::parseParameterValue()
 {
     if (m_pos >= m_line.length())
         return;
-    m_parameterValueQuoted = (m_line[m_pos] == '"');
+    m_parameterValueQuoted = (m_line[m_pos] == u'"');
     if (m_parameterValueQuoted)
         ++m_pos;
 
     for (; m_pos < m_line.length(); ++m_pos) {
         QChar c = m_line.at(m_pos);
 
-        bool quote = (c == '"');
-        bool ok = (c >= ' ') || (c == '\t');
+        bool quote = (c == u'"');
+        bool ok = (c >= u' ') || (c == u'\t');
         if (!m_parameterValueQuoted) {
-            ok = ok && !quote && (c != ',') && (c != ':') && (c != ';');
+            ok = ok && !quote && (c != u',') && (c != u':') && (c != u';');
         } else if (quote) { // end of quote
             ok = false;
             ++m_pos;
@@ -218,7 +218,7 @@ QString ICalendarParser::firstParameterValue(const QString &parameterName)
 
 void ICalendarParser::parseValue()
 {
-    if ((m_pos >= m_line.length()) || m_line[m_pos] != ':')
+    if ((m_pos >= m_line.length()) || m_line[m_pos] != u':')
         throw createException("invalid property value");
 
     ++m_pos;
@@ -254,11 +254,11 @@ void ICalendarParser::parseValue()
     } else if (valueType == u"DATE-LIST") {
         m_propertyValue = QVariant::fromValue(parseDateList(value));
     } else if (valueType == u"TIME") {
-        QStringList timeStrings = value.split(',');
+        QStringList timeStrings = value.split(u',');
         QList<QDateTime> times;
         times.reserve(timeStrings.size());
         for (const QString &timeString : timeStrings) {
-            auto dt = parseDateTime("00000000T" + timeString, tzId);
+            auto dt = parseDateTime(u"00000000T" + timeString, tzId);
             if (!dt.isValid())
                 throw createException("invalid time specification");
             times << dt;
@@ -293,7 +293,7 @@ void ICalendarParser::parseValue()
                                                 : match.captured(3).toInt();
 
             int offsetSec = ss + 60 * mm + 60 * 60 * hh;
-            if (value[0] == '-')
+            if (value[0] == u'-')
                 offsetSec = -offsetSec;
 
             if (hh > 12 || mm >= 60 || ss >= 60 || offsetSec == 0)
@@ -334,7 +334,7 @@ QDate ICalendarParser::parseDate(const QString &dateString)
 
 QList<QDate> ICalendarParser::parseDateList(const QString &dateString)
 {
-    QStringList dateStrings = dateString.split(',');
+    QStringList dateStrings = dateString.split(u',');
     QList<QDate> dates;
     dates.reserve(dateStrings.size());
     for (const QString &ds : dateStrings)
@@ -394,7 +394,7 @@ QDateTime ICalendarParser::parseDateTime(const QString &dtString, const QString 
 
 QList<QDateTime> ICalendarParser::parseDateTimeList(const QString &dateTimeString, const QString &tzId)
 {
-    QStringList dateTimeStrings = dateTimeString.split(',');
+    QStringList dateTimeStrings = dateTimeString.split(u',');
     QList<QDateTime> dateTimes;
     dateTimes.reserve(dateTimeStrings.size());
     for (const QString &dts : dateTimeStrings)
@@ -411,7 +411,7 @@ ICalendarRecurrence ICalendarParser::parseRecurrence(const QString &value, const
     bool hasCount = false;
     bool hasUntil = false;
     bool hasInterval = false;
-    QStringList parts = value.split(';');
+    QStringList parts = value.split(u';');
     for (const auto &part : parts) {
         auto pos = part.indexOf(u'=');
         if (pos > 0) {

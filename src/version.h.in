@@ -3,13 +3,11 @@
 
 #pragma once
 
-#define HAIQ_MAJOR $$VERSION_MAJOR
-#define HAIQ_MINOR $$VERSION_MINOR
-#define HAIQ_PATCH $$VERSION_PATCH
+#define HAIQ_MAJOR @VERSION_MAJOR@
+#define HAIQ_MINOR @VERSION_MINOR@
+#define HAIQ_PATCH @VERSION_PATCH@
 
-#define HAIQ_BUILD_USER       '"$$BUILD_USER"'
-#define HAIQ_BUILD_HOST       '"$$BUILD_HOST"'
-#define HAIQ_GIT_VERSION      '"$$GIT_VERSION"'
+#define HAIQ_BUILD_NUMBER "@BUILD_NUMBER@"
 
 // 2 step stringification
 #define HAIQ_STR(s)   HAIQ_STR2(s)
@@ -17,20 +15,20 @@
 
 #if defined(_MSC_VER)
 #  if _MSC_VER >= 1920
-#    define HAIQ_COMPILER_VERSION_SUB   '"2019 (16."' HAIQ_STR(_MSC_VER) '")"'
+#    define HAIQ_COMPILER_VERSION_SUB   "2019 (16." HAIQ_STR(_MSC_VER) ")"
 #  elif _MSC_VER >= 1910
-#    define HAIQ_COMPILER_VERSION_SUB   '"2017 (15."' HAIQ_STR(_MSC_VER) '")"'
+#    define HAIQ_COMPILER_VERSION_SUB   "2017 (15." HAIQ_STR(_MSC_VER) ")"
 #  elif _MSC_VER >= 1900
-#    define HAIQ_COMPILER_VERSION_SUB   '"2015 (14.0)"'
+#    define HAIQ_COMPILER_VERSION_SUB   "2015 (14.0)"
 #  endif
-#  define HAIQ_COMPILER_VERSION  '"Microsoft Visual-C++"' HAIQ_COMPILER_VERSION_SUB
+#  define HAIQ_COMPILER_VERSION  "Microsoft Visual-C++" HAIQ_COMPILER_VERSION_SUB
 #elif defined(__GNUC__)
-#  define HAIQ_COMPILER_VERSION  '"GCC "' __VERSION__
+#  define HAIQ_COMPILER_VERSION  "GCC " __VERSION__
 #else
-#  define HAIQ_COMPILER_VERSION  '"unknown"'
+#  define HAIQ_COMPILER_VERSION  "unknown"
 #endif
 
-#define HAIQ_VERSION   HAIQ_STR(HAIQ_MAJOR) '"."' HAIQ_STR(HAIQ_MINOR) '"."' HAIQ_STR(HAIQ_PATCH)
-#define HAIQ_COPYRIGHT '"$$COPYRIGHT"'
-#define HAIQ_URL       '"$$GITHUB_URL"'
-#define HAIQ_NAME      '"$$TARGET"'
+#define HAIQ_VERSION   HAIQ_STR(HAIQ_MAJOR) "." HAIQ_STR(HAIQ_MINOR) "." HAIQ_STR(HAIQ_PATCH)
+#define HAIQ_COPYRIGHT "@COPYRIGHT@"
+#define HAIQ_URL       "@GITHUB_URL"
+#define HAIQ_NAME      "@NAME@"

@@ -79,7 +79,7 @@ QtLocalPeer::QtLocalPeer(QObject* parent, const QString &appId)
 #endif
         prefix = id.section(QLatin1Char('/'), -1);
     }
-    prefix.remove(QRegularExpression("[^a-zA-Z]"));
+    prefix.remove(QRegularExpression(u"[^a-zA-Z]"_qs));
     prefix.truncate(6);
 
     QByteArray idc = id.toUtf8();
@@ -89,7 +89,7 @@ QtLocalPeer::QtLocalPeer(QObject* parent, const QString &appId)
 
 #if defined(Q_OS_WIN)
     if (!pProcessIdToSessionId) {
-        QLibrary lib("kernel32");
+        QLibrary lib(u"kernel32"_qs);
         pProcessIdToSessionId = (PProcessIdToSessionId)lib.resolve("ProcessIdToSessionId");
     }
     if (pProcessIdToSessionId) {

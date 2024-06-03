@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include <QFile>
-#include <errno.h>
+#include <cstring>
 
 #include "exception.h"
 
@@ -15,7 +15,7 @@ Exception::Exception(const QString &errorString) Q_DECL_NOEXCEPT
 { }
 
 Exception::Exception(int _errno, const char *errorString) Q_DECL_NOEXCEPT
-    : m_errorString(QString::fromLatin1(errorString) + u": "_qs + QString::fromLocal8Bit(strerror(_errno)))
+    : m_errorString(QString::fromLatin1(errorString) + u": "_qs + QString::fromLocal8Bit(::strerror(_errno)))
 { }
 
 Exception::Exception(const QFile &file, const char *errorString) Q_DECL_NOEXCEPT
@@ -27,7 +27,7 @@ Exception::Exception(const Exception &copy) Q_DECL_NOEXCEPT
 { }
 
 Exception::Exception(Exception &&move) Q_DECL_NOEXCEPT
-    : m_errorString(move.m_errorString)
+    : m_errorString(std::move(move.m_errorString))
 {
     qSwap(m_whatBuffer, move.m_whatBuffer);
 }

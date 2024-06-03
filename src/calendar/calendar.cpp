@@ -22,6 +22,21 @@ enum Role {
     SameDay
 };
 
+Calendar *Calendar::s_instance = nullptr;
+
+Calendar *Calendar::instance()
+{
+    return s_instance;
+}
+
+Calendar *Calendar::createInstance(const QUrl &url, QObject *parent)
+{
+    if (Q_UNLIKELY(s_instance))
+        qFatal("Calendar::createInstance() was called a second time.");
+
+    s_instance = new Calendar(url, parent);
+    return s_instance;
+}
 
 Calendar::Calendar(const QUrl &url, QObject *parent)
     : QAbstractListModel(parent)
@@ -283,11 +298,6 @@ void Calendar::handleNetworkReply(QNetworkReply *reply)
     m_isLoading = stillLoading;
     if (!m_isLoading)
         emit isLoadingChanged(m_isLoading);
-}
-
-void UpcomingCalendarEntries::registerQmlTypes()
-{
-    qmlRegisterType<UpcomingCalendarEntries>("org.griebl.calendar", 1, 0, "UpcomingCalendarEntries");
 }
 
 UpcomingCalendarEntries::UpcomingCalendarEntries(QObject *parent)

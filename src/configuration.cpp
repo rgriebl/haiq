@@ -12,6 +12,8 @@
 #include "exception.h"
 #include "configuration.h"
 
+using namespace Qt::StringLiterals;
+
 
 Configuration::Configuration(const QString &configFile,  const QString &variant)
     : m_configFile(configFile)
@@ -45,7 +47,7 @@ void Configuration::recursiveMergeVariantMap(QVariantMap &into, const QVariantMa
     std::function<void(QVariantMap *, const QVariantMap &)> recursiveMergeMap =
             [&recursiveMergeMap](QVariantMap *into, const QVariantMap &from) {
         for (auto it = from.constBegin(); it != from.constEnd(); ++it) {
-            QVariant fromValue = it.value();
+            const QVariant &fromValue = it.value();
             QVariant &toValue = (*into)[it.key()];
 
             bool needsMerge = (toValue.typeId() == fromValue.typeId());
@@ -89,7 +91,7 @@ void Configuration::parse()
             throw Exception("Cannot parse \"%1\": %2 at line %3:\n%4\n%5^")
                     .arg(fileName, parseError.errorString()).arg(line)
                     .arg(QString::fromUtf8(data.mid(lpos + 1, rpos - lpos - 1)))
-                    .arg(QString(parseError.offset - lpos - 1, QChar(' ')));
+                    .arg(QString(parseError.offset - lpos - 1, u' '));
         }
         return json;
     };

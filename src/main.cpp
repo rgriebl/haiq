@@ -25,24 +25,16 @@
 #include <QEventLoop>
 #include <QSaveFile>
 #include <QQuickStyle>
-#if defined(HAIQ_USE_WEBENGINE)
-#  include <QtWebEngineQuick/qtwebenginequickglobal.h>
-#endif
-#if defined(HAIQ_USE_MULTIMEDIA)
-#  include <QMediaDevices>
-#  include <QAudioDevice>
-#endif
 
 #include "qtsingleapplication/qtsingleapplication.h"
-#include "homeassistant.h"
-#include "screenbrightness.h"
-#include "squeezeboxserver.h"
-#include "calendar.h"
+#include "homeassistant/homeassistant.h"
+#include "screenbrightness/screenbrightness.h"
+#include "squeezebox/squeezeboxserver.h"
+#include "calendar/calendar.h"
 #include "xbrowsersync/xbrowsersync.h"
 #include "version.h"
 #include "configuration.h"
 #include "exception.h"
-
 
 #if defined(Q_OS_ANDROID)
 #  include "openurlclient.h"
@@ -56,7 +48,8 @@ enum MessageType { UsageMessage, ErrorMessage };
 #if defined(Q_OS_ANDROID)
 #  include <android/log.h>
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-#  include <Windows.h>
+#include <QDirIterator>
+#include <Windows.h>
 #  pragma comment(lib, "user32.lib")
 
 // Return whether to use a message box. Use handles if a console can be obtained
@@ -121,23 +114,17 @@ int main(int argc, char *argv[])
     qputenv("QT_VIRTUALKEYBOARD_DESKTOP_DISABLE", "1");
 #endif
 
-    QCoreApplication::setApplicationName(QLatin1String(HAIQ_NAME));
-    QCoreApplication::setApplicationVersion(QLatin1String(HAIQ_VERSION));
-    QCoreApplication::setOrganizationName(QLatin1String(HAIQ_NAME));
+    QCoreApplication::setApplicationName(HAIQ_NAME u""_qs);
+    QCoreApplication::setApplicationVersion(HAIQ_VERSION u""_qs);
+    QCoreApplication::setOrganizationName(HAIQ_NAME u""_qs);
     QCoreApplication::setOrganizationDomain(u"haiq.griebl.org"_qs);
     QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents);
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // for webengine
-#if defined(HAIQ_USE_WEBENGINE)
-    QtWebEngineQuick::initialize();
-#endif
 #if defined(Q_OS_WINDOWS)
 //    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Floor);
 #endif
     QtSingleApplication app(QCoreApplication::applicationName(), argc, argv);
-
-//    if (QQuickWindow::sceneGraphBackend() == QSGRendererInterface::Software)
-//        QUnifiedTimer::instance()->setTimingInterval(32 * 60); // 16 ~ 60fps, 32 ~ 30fps
 
     QQuickWindow *window = nullptr;
     bool anotherInstanceAvailable = app.isRunning();
@@ -158,12 +145,12 @@ int main(int argc, char *argv[])
         }
     });
 
-    QString basePath = QLatin1String(HAIQ_BASE_PATH);
+    QString basePath = u":/"_qs;
     if (!basePath.endsWith(u'/'))
         basePath.append(u'/');
     if (basePath.startsWith(u"qrc:/"))
         basePath.remove(0, 3);
-    QString qmlPath = basePath + u"qml/"_qs;
+    QString qmlPath = basePath + u"Ui/"_qs;
 
     QSettings settings;
 
@@ -183,7 +170,7 @@ int main(int argc, char *argv[])
     clp.addOption({ u"brightness-control"_qs, u"Enable screen brightness control."_qs, u"options"_qs });
 
     if (!clp.parse(QCoreApplication::arguments())) {
-        showParserMessage(clp.errorText() + "\n", ErrorMessage);
+        showParserMessage(clp.errorText() + u"\n", ErrorMessage);
         return 1;
     }
     if (clp.isSet(u"help"_qs))
@@ -219,10 +206,10 @@ int main(int argc, char *argv[])
         if (!configHost.isEmpty() && !configToken.isEmpty()) {
             QSaveFile scf(configFile);
             if (!scf.open(QIODevice::WriteOnly)) {
-                showParserMessage("Could not open config file " + configFile + "\n", ErrorMessage);
+                showParserMessage(u"Could not open config file " + configFile + u"\n", ErrorMessage);
                 return 4;
             }
-            QUrl url(u"http://" % configHost % u"/config/" % configToken % u"/config.json");
+            QUrl url(u"http://" + configHost + u"/config/" + configToken + u"/config.json");
             QNetworkAccessManager nam;
             auto reply = nam.get(QNetworkRequest(url));
             QEventLoop loop;
@@ -250,16 +237,12 @@ int main(int argc, char *argv[])
     try {
         config.parse();
     } catch (const Exception &e) {
-        showParserMessage(e.errorString() % u".\n", ErrorMessage);
+        showParserMessage(e.errorString() + u".\n", ErrorMessage);
     }
 
-#if defined(HAIQ_USE_MULTIMEDIA)
-    const auto aos = QMediaDevices::audioOutputs();
-    qWarning() << "Found" << aos.size() << "audio device(s)";
-    for (const auto &ao : aos) {
-        qWarning() << (ao.isDefault() ? " *" : " -") << ao.description() << ao.id();
-    }
-#endif
+    QDirIterator dit(u":/"_qs, QDirIterator::Subdirectories);
+    while (dit.hasNext())
+        qWarning() << dit.next();
 
     QQmlApplicationEngine engine;
     engine.addImportPath(qmlPath);
@@ -300,7 +283,7 @@ int main(int argc, char *argv[])
 
         qmlFile = config["view"].toString();
         if (!qmlFile.isEmpty() && !QFile::exists(qmlPath + qmlFile)) {
-            showParserMessage("Invalid view: " + qmlFile + "\n", ErrorMessage);
+            showParserMessage(u"Invalid view: " + qmlPath + qmlFile + u"\n", ErrorMessage);
             return 2;
         }
 
@@ -324,7 +307,6 @@ int main(int argc, char *argv[])
 
         /////////////////////////////////
 
-        ScreenBrightness::registerQmlTypes();
         ScreenBrightness::createInstance(clp.value(u"brightness-control"_qs));
 
         /////////////////////////////////
@@ -332,12 +314,11 @@ int main(int argc, char *argv[])
         const auto homeAssistant = config["homeAssistant"].toMap();
         const QUrl haUrl = QUrl::fromUserInput(homeAssistant[u"url"_qs].toString());
         if (!haUrl.isEmpty() && !haUrl.scheme().startsWith(u"http")) {
-            showParserMessage("Invalid Home-Assistant server URL: " + haUrl.toString() + "\n", ErrorMessage);
+            showParserMessage(u"Invalid Home-Assistant server URL: " + haUrl.toString() + u"\n", ErrorMessage);
             return 2;
         }
         const QString haAuthToken = homeAssistant[u"accessToken"_qs].toString();
 
-        HomeAssistant::registerQmlTypes();
         HomeAssistant::createInstance(haUrl, haAuthToken);
 
         /////////////////////////////////
@@ -347,7 +328,6 @@ int main(int argc, char *argv[])
         QStringList sbPlayerNames = squeezeboxServer[u"players"_qs].toStringList();
         auto sbThisPlayerName = squeezeboxServer[u"thisPlayer"_qs].toString();
 
-        SqueezeBoxServer::registerQmlTypes();
         SqueezeBoxServer::createInstance(squeezeBoxServerUrl.host(), squeezeBoxServerUrl.port());
         if (!sbPlayerNames.isEmpty())
             SqueezeBoxServer::instance()->setPlayerNameFilter(sbPlayerNames);
@@ -361,7 +341,6 @@ int main(int argc, char *argv[])
         auto xbSyncId = xbSync[u"syncId"_qs].toString();
         auto xbSyncPassword = xbSync[u"password"_qs].toString();
 
-        XBrowserSync::registerQmlTypes();
         XBrowserSync::createInstance(xbSyncUrl, xbSyncId, xbSyncPassword);
 
         /////////////////////////////////
@@ -382,25 +361,25 @@ int main(int argc, char *argv[])
         calUrl.setUserName(calendar[u"username"_qs].toString());
         calUrl.setPassword(calendar[u"password"_qs].toString());
 
-        UpcomingCalendarEntries::registerQmlTypes();
-        Calendar *cal = new Calendar(calUrl, qApp);
-        engine.rootContext()->setContextProperty(u"MainCalendar"_qs, cal); //TODO: get rid of context property
+        Calendar::createInstance(calUrl, qApp);
 
         /////////////////////////////////
 
         engine.rootContext()->setContextProperty(u"Config"_qs, config["qml"].toMap());
     }
 
-    QUrl baseUrl = basePath.startsWith(u":/") ? u"qrc"_qs + basePath
-                                              : u"file:///"_qs + basePath;
+    QString baseUrl = basePath.startsWith(u":/") ? QString(u"qrc"_qs + qmlPath)
+                                                 : QString(u"file:///"_qs + qmlPath);
 
     QIcon::setThemeName(u"dummy"_qs);
     QIcon::setFallbackSearchPaths({ basePath + u"icons/"_qs });
 
     engine.rootContext()->setContextProperty(u"showTracer"_qs, clp.isSet(u"show-tracer"_qs));
 
-    engine.setBaseUrl(baseUrl);
-    engine.load(QUrl(u"qml/"_qs + qmlFile));
+    extern void qml_register_types_HAiQ(); qml_register_types_HAiQ();
+    extern void qml_register_types_Ui(); qml_register_types_Ui();
+
+    engine.load(baseUrl + qmlFile);
 
     bool isFullscreen = clp.isSet(u"fullscreen"_qs);
 #if defined(Q_OS_ANDROID)
@@ -463,7 +442,7 @@ int main(int argc, char *argv[])
                     if (msg) {
                         if (msg->message == WM_QUERYENDSESSION && msg->lParam == ENDSESSION_CLOSEAPP) {
                             // enable the installer to re-start the app after installation
-                            QString cmdline = qApp->arguments().mid(1).join(' ');
+                            QString cmdline = qApp->arguments().mid(1).join(u' ');
                             auto restartOk = RegisterApplicationRestart(reinterpret_cast<const WCHAR *>(cmdline.utf16()), 0);
                             qWarning() << "RegisterApplicationRestart=" << restartOk << " -- cmdline:" << cmdline;
                             *result = 1;

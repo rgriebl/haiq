@@ -23,8 +23,6 @@ class ScreenBrightness : public QObject
 public:
     ~ScreenBrightness();
 
-    static void registerQmlTypes();
-
     static ScreenBrightness *instance();
     static ScreenBrightness *createInstance(const QString &options, QObject *parent = nullptr);
 

@@ -16,10 +16,6 @@
 
 using namespace std::placeholders;
 
-#define qSL(x) QStringLiteral(x)
-#define qL1S(x) QLatin1String(x)
-
-
 void SqueezeBoxServer::onPlayersReply(const QStringList &result)
 {
     const auto parsed = parseExtendedResult(result, u"playerindex"_qs);
@@ -123,7 +119,7 @@ QString SqueezeBoxAlarm::dayOfWeekListToString(const QVariantList &vl)
         dow << QString::number(d);
     }
     std::sort(dow.begin(), dow.end());
-    return dow.join(',');
+    return dow.join(u',');
 }
 
 
@@ -280,16 +276,6 @@ void SqueezeBoxServer::setThisPlayerAlarmState(const QString &newState)
     }
 }
 
-void SqueezeBoxServer::registerQmlTypes()
-{
-    qmlRegisterSingletonType<SqueezeBoxServer>("org.griebl.haiq", 1, 0, "SqueezeBoxServer",
-                                           [](QQmlEngine *engine, QJSEngine *) -> QObject * {
-        s_instance->m_engine = engine;
-        QQmlEngine::setObjectOwnership(instance(), QQmlEngine::CppOwnership);
-        return instance();
-    });
-}
-
 SqueezeBoxServer::SqueezeBoxServer(const QString &serverHost, int serverPort, QObject *parent)
     : QObject(parent)
     , m_serverHost(serverHost)
@@ -359,7 +345,7 @@ SqueezeBoxServer::SqueezeBoxServer(const QString &serverHost, int serverPort, QO
         if (m_connected) {
             // no login support atm
             m_listen.write("listen\r\n");
-            command({ "players", 0, 1000 }, std::bind(&SqueezeBoxServer::onPlayersReply, this, _1));
+            command({ u"players"_qs, 0, 1000 }, std::bind(&SqueezeBoxServer::onPlayersReply, this, _1));
         } else {
             while (!m_players.isEmpty()) {
                 auto player = m_players.take(m_players.firstKey());
@@ -383,8 +369,8 @@ SqueezeBoxServer::SqueezeBoxServer(const QString &serverHost, int serverPort, QO
         Q_ASSERT(player);
         QString id = player->playerId();
         qWarning() << "Added Player" << id;
-        command({ id, "alarms", 0, 1000, "filter:all" }, std::bind(&SqueezeBoxServer::onPlayerAlarmsReply, this, id, _1));
-        command({ id, "playerpref", "alarmsEnabled", "?" }, std::bind(&SqueezeBoxServer::onPlayerPrefAlarmsEnabledReply, this, id, _1));
+        command({ id, u"alarms"_qs, 0, 1000, u"filter:all"_qs }, std::bind(&SqueezeBoxServer::onPlayerAlarmsReply, this, id, _1));
+        command({ id, u"playerpref"_qs, u"alarmsEnabled"_qs, u"?"_qs }, std::bind(&SqueezeBoxServer::onPlayerPrefAlarmsEnabledReply, this, id, _1));
     });
 
     connect(this, &SqueezeBoxServer::receivedNotification, this, [this](const QStringList &args) {
@@ -395,12 +381,12 @@ SqueezeBoxServer::SqueezeBoxServer(const QString &serverHost, int serverPort, QO
 
             if (args.size() >= 4) {
                 if (args.at(1) == u"client") {
-                    command({ "players", 0, 1000 }, std::bind(&SqueezeBoxServer::onPlayersReply, this, _1));
+                    command({ u"players"_qs, 0, 1000 }, std::bind(&SqueezeBoxServer::onPlayersReply, this, _1));
                 } else if (args.at(1) == u"playerpref" && args.at(2) == u"alarmsEnabled") {
                     player->updateAlarmsEnabled(args.at(3));
                 } else if (args.at(1) == u"alarm") {
                     if (args.at(2) == u"update" || args.at(2) == u"add" || args.at(2) == u"delete") {
-                        command({ id, "alarms", 0, 1000, "filter:all" }, std::bind(&SqueezeBoxServer::onPlayerAlarmsReply, this, id, _1));
+                        command({ id, u"alarms"_qs, 0, 1000, u"filter:all"_qs }, std::bind(&SqueezeBoxServer::onPlayerAlarmsReply, this, id, _1));
                     } else if (args.at(2) == u"sound") {
                         player->updateAlarmActive(true);
                     } else if (args.at(2) == u"end") {
@@ -446,7 +432,7 @@ QPair<StringMap, QVector<StringMap>> SqueezeBoxServer::parseExtendedResult(const
     bool inObject = false;
 
     for (const auto &tagValue : result) {
-        auto pos = tagValue.indexOf(':');
+        auto pos = tagValue.indexOf(u':');
         const QString tag(pos <= 0 ? QString() : tagValue.left(pos));
         const QString value(tagValue.mid(pos + 1));
 
@@ -586,146 +572,6 @@ void SqueezeBoxServer::parseListenData()
     } while (true);
 }
 
-#if 0
-
-bool SqueezeBoxServer::callMethod(const QString &playerId, const QString &method,
-                                  const QVariantList &parameters, const QJSValue &callback,
-                                  const QJSValue &errorCallback)
-{
-    if (method.isEmpty() || !callback.isCallable() || !callback.engine())
-        return false;
-
-    QUrl url = m_serverUrl;
-    url.setPath(qSL("/jsonrpc.js"));
-    QNetworkRequest nr(url);
-
-    //QNetworkRequest nr(m_serverUrlqSL("http://") + server() + qSL(":") + QString::number(port()) + qSL("/jsonrpc.js"));
-    nr.setHeader(QNetworkRequest::ContentTypeHeader, qSL("application/json"));
-    QJsonArray methodArray = QJsonArray::fromVariantList(parameters);
-    methodArray.prepend(method);
-    QJsonDocument rpcout { QJsonObject {
-            { "method", "slim.request" },
-            { "params", QJsonArray { playerId, methodArray } }
-        } };
-    auto reply = m_nam->post(nr, rpcout.toJson());
-    if (!reply)
-        return false;
-
-    connect(reply, &QNetworkReply::finished, this, [this, reply, callback, errorCallback]() {
-//        qWarning() << "RPC finished:" << reply->error() << reply->errorString()
-//                   << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        QByteArray data = reply->readAll();
-        reply->deleteLater();
-
-        int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
-        auto doError = [errorCallback](const QString &error) {
-            if (errorCallback.isCallable()) {
-                QJSValue cb = errorCallback;
-                cb.call({ error });
-            }
-        };
-
-        if (reply->error() != QNetworkReply::NoError) {
-            doError(reply->errorString());
-        } else if (code < 200 || code >= 400) {
-            doError(qSL("HTTP error code: %1").arg(code));
-        } else {
-            QJsonParseError err;
-            QJsonDocument rpcin = QJsonDocument::fromJson(data, &err);
-
-            //        qWarning() << "received JSONRPC response:";
-            //        qWarning().noquote() << data;
-            if (rpcin.isNull()) {
-                //                doError(qSL("JSON parse error at offset ") + QString::number(err.offset) +
-                //                        qSL(": ") + err.errorString());
-            } else {
-
-                QJsonObject root = rpcin.object();
-
-                if (root.value(qSL("method")) != qSL("slim.request"))
-                    doError(qSL("Unexpected response method: ") + root.value(qSL("method")).toString());
-
-                QJsonValue result = root.value(qSL("result"));
-                auto jsResult = callback.engine()->toScriptValue(result); // ??? toVariant?
-                QJSValue cb = callback;
-                cb.call({ jsResult });
-            }
-        }
-    });
-
-    return true;
-}
-#endif
-#ifdef CPP_VARIANT
-
-bool SqueezeBoxServer::callMethod(const QString &playerId, const QString &method,
-                                  const QVariantList &parameters,
-                                  const std::function<void(const QVariant &)> &callback,
-                                  const std::function<void(const QString &)> &errorCallback)
-{
-    if (method.isEmpty() || !callback)
-        return false;
-
-    //    Request r;
-    //    r.method = method;
-    //    r.parameters = parameters;
-    //    r.callback = callback;
-
-    QNetworkRequest nr(qSL("http://") + server() + qSL(":") + QString::number(port()) + qSL("/jsonrpc.js"));
-    nr.setHeader(QNetworkRequest::ContentTypeHeader, qSL("application/json"));
-    QJsonArray methodArray = QJsonArray::fromVariantList(parameters);
-    methodArray.prepend(method);
-    QJsonDocument rpcout { QJsonObject {
-            { "method", "slim.request" },
-            { "params", QJsonArray { playerId, methodArray } }
-        } };
-    auto reply = m_nam->post(nr, rpcout.toJson());
-    if (!reply)
-        return false;
-
-    connect(reply, &QNetworkReply::finished, this, [this, reply, callback, errorCallback]() {
-        QByteArray data = reply->readAll();
-        reply->deleteLater();
-
-        int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
-        if (reply->error() != QNetworkReply::NoError) {
-            if (errorCallback)
-                errorCallback(reply->errorString());
-        } else if (code < 200 || code >= 400) {
-            if (errorCallback)
-                errorCallback(qSL("HTTP error code: %1").arg(code));
-        } else {
-            QJsonParseError err;
-            QJsonDocument rpcin = QJsonDocument::fromJson(data, &err);
-
-            //        qWarning() << "received JSONRPC response:";
-            //        qWarning().noquote() << data;
-            if (rpcin.isNull()) {
-                if (errorCallback) {
-                    errorCallback(qSL("JSON parse error at offset ") + QString::number(err.offset) +
-                                  qSL(": ") + err.errorString());
-                }
-            } else {
-                QJsonObject root = rpcin.object();
-
-                if (root.value(qSL("method")) != qSL("slim.request")) {
-                    if (errorCallback)
-                        errorCallback(qSL("Unexpected response method: ") + root.value(qSL("method")).toString());
-                }
-
-                QJsonValue result = root.value(qSL("result"));
-                callback(result.toVariant());
-            }
-        }
-    });
-
-    return true;
-}
-
-#endif
-
 SqueezeBoxPlayer::SqueezeBoxPlayer()
 { }
 
@@ -814,7 +660,7 @@ void SqueezeBoxPlayer::setAlarmsEnabled(bool alarmsEnabled)
     if (m_alarmsEnabled == alarmsEnabled)
         return;
 
-    SqueezeBoxServer::instance()->command({ playerId(), "playerpref", "alarmsEnabled",
+    SqueezeBoxServer::instance()->command({ playerId(), u"playerpref"_qs, u"alarmsEnabled"_qs,
                                             QString::number(alarmsEnabled ? 1 : 0) });
     m_alarmsEnabled = alarmsEnabled;
     emit alarmsEnabledChanged(m_alarmsEnabled);
@@ -831,13 +677,13 @@ QList<QObject *> SqueezeBoxPlayer::alarms() const
 
 bool SqueezeBoxPlayer::newAlarm(bool enabled, bool repeat, int time, const QVariantList &dayOfWeek)
 {
-    QVariantList args = { playerId(), "alarm", "add",
-                          qSL("enabled:") + (enabled ? "1" : "0"),
-                          qSL("repeat:") + (repeat ? "1" : "0"),
-                          qSL("time:") + QString::number(time),
-                        };
+    QVariantList args = { playerId(), u"alarm"_qs, u"add"_qs,
+                         u"enabled:%1"_qs.arg(enabled ? 1: 0),
+                         u"repeat:%1"_qs.arg(repeat ? 1: 0),
+                         u"time:%1"_qs.arg(time),
+                         };
     if (!dayOfWeek.isEmpty())
-        args.append(qSL("dow:") + SqueezeBoxAlarm::dayOfWeekListToString(dayOfWeek));
+        args.append(u"dow:%1"_qs.arg(SqueezeBoxAlarm::dayOfWeekListToString(dayOfWeek)));
 
     SqueezeBoxServer::instance()->command(args);
     return true;
@@ -846,19 +692,19 @@ bool SqueezeBoxPlayer::newAlarm(bool enabled, bool repeat, int time, const QVari
 void SqueezeBoxPlayer::deleteAlarm(const QString &alarmId)
 {
     if (m_alarms.contains(alarmId))
-        SqueezeBoxServer::instance()->command({ playerId(), "alarm", "delete", qSL("id:") + alarmId });
+        SqueezeBoxServer::instance()->command({ playerId(), u"alarm"_qs, u"delete"_qs, u"id:%1"_qs.arg(alarmId) });
 }
 
 void SqueezeBoxPlayer::alarmSnooze()
 {
     if (m_alarmActive)
-        SqueezeBoxServer::instance()->command({ playerId(), "button", "snooze" });
+        SqueezeBoxServer::instance()->command({ playerId(), u"button"_qs, u"snooze"_qs });
 }
 
 void SqueezeBoxPlayer::alarmStop()
 {
     if (m_alarmActive)
-        SqueezeBoxServer::instance()->command({ playerId(), "button", "stop" });
+        SqueezeBoxServer::instance()->command({ playerId(), u"button"_qs, u"stop"_qs });
 }
 
 QDateTime SqueezeBoxPlayer::nextAlarm() const
@@ -938,13 +784,13 @@ QString SqueezeBoxAlarm::dayOfWeekString() const
             if ((j == days.size()) || (days[j] != (days[i] + (j-i)))) {
                 // non-consecutive or end of array
                 if (!result.isEmpty())
-                    result.append(',');
+                    result.append(u',');
                 if (j - i >= minimumDayRange) {
-                    result = result + dayName(days[i]) + qSL("-") + dayName(days[j - 1]);
+                    result = result + dayName(days[i]) + u"-"_qs + dayName(days[j - 1]);
                 } else {
                     for (int k = i; k < j; ++k) {
                         if (k > i)
-                            result.append(',');
+                            result.append(u',');
                         result.append(dayName(days[k]));
                     }
                 }
@@ -974,9 +820,9 @@ void SqueezeBoxAlarm::setEnabled(bool enabled)
     if (m_enabled == enabled)
         return;
 
-    SqueezeBoxServer::instance()->command({ playerId(), "alarm", "update",
-                                            qSL("id:") + m_alarmId,
-                                            qSL("enabled:") + (enabled ? "1" : "0") });
+    SqueezeBoxServer::instance()->command({ playerId(), u"alarm"_qs, u"update"_qs,
+                                           u"id:%1"_qs.arg(m_alarmId),
+                                           u"enabled:%1"_qs.arg(enabled ? 1 : 0) });
     m_enabled = enabled;
     emit enabledChanged(m_enabled);
 }
@@ -986,10 +832,10 @@ void SqueezeBoxAlarm::setRepeat(bool repeat)
     if (m_repeat == repeat)
         return;
 
-    SqueezeBoxServer::instance()->command({ playerId(), "alarm", "update",
-                                            qSL("id:") + m_alarmId,
-                                            qSL("repeat:") + (repeat ? "1" : "0") });
-        m_repeat = repeat;
+    SqueezeBoxServer::instance()->command({ playerId(), u"alarm"_qs, u"update"_qs,
+                                           u"id:%1"_qs.arg(m_alarmId),
+                                           u"repeat:%1"_qs.arg(repeat ? 1 : 0) });
+    m_repeat = repeat;
     emit repeatChanged(m_repeat);
 }
 
@@ -998,9 +844,9 @@ void SqueezeBoxAlarm::setTime(int time)
     if (m_time == time)
         return;
 
-    SqueezeBoxServer::instance()->command({ playerId(), "alarm", "update",
-                                            qSL("id:") + m_alarmId,
-                                            qSL("time:") + QString::number(time) });
+    SqueezeBoxServer::instance()->command({ playerId(), u"alarm"_qs, u"update"_qs,
+                                           u"id:%1"_qs.arg(m_alarmId),
+                                           u"time:%1"_qs.arg(time) });
     m_time = time;
     emit timeChanged(m_time);
 }
@@ -1010,9 +856,9 @@ void SqueezeBoxAlarm::setDayOfWeek(const QVariantList &dayOfWeek)
     if (m_dayOfWeek == dayOfWeek)
         return;
 
-    SqueezeBoxServer::instance()->command({ playerId(), "alarm", "update",
-                                            qSL("id:") + m_alarmId,
-                                            qSL("dow:") + SqueezeBoxAlarm::dayOfWeekListToString(dayOfWeek) });
+    SqueezeBoxServer::instance()->command({ playerId(), u"alarm"_qs, u"update"_qs,
+                                           u"id:%1"_qs.arg(m_alarmId),
+                                           u"dow:%1"_qs.arg(SqueezeBoxAlarm::dayOfWeekListToString(dayOfWeek)) });
     m_dayOfWeek = dayOfWeek;
     emit dayOfWeekChanged();
 }
@@ -1022,9 +868,9 @@ void SqueezeBoxAlarm::setVolume(qreal volume)
     if (qFuzzyCompare(m_volume, volume))
         return;
 
-    SqueezeBoxServer::instance()->command({ playerId(), "alarm", "update",
-                                            qSL("id:") + m_alarmId,
-                                            qSL("volume:") + QString::number(int(volume * 100)) });
+    SqueezeBoxServer::instance()->command({ playerId(), u"alarm"_qs, u"update"_qs,
+                                           u"id:%1"_qs.arg(m_alarmId),
+                                           u"volume:%1"_qs.arg(int(volume * 100)) });
     m_volume = volume;
     emit volumeChanged(m_volume);
 }

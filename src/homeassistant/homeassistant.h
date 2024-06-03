@@ -18,7 +18,6 @@
 
 
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
-QT_FORWARD_DECLARE_CLASS(QQmlEngine)
 
 
 class HomeAssistant : public QObject
@@ -40,8 +39,6 @@ public:
         Subscribed
     };
     Q_ENUM(State)
-
-    static void registerQmlTypes();
 
     static HomeAssistant *instance();
     static HomeAssistant *createInstance(const QUrl &homeAssistantUrl,
@@ -98,7 +95,6 @@ private:
     int m_subscriptionId = 0;
     int m_initialStateId = 0;
     QMultiMap<QString, QJSValue> m_subscriptions;
-    QPointer<QQmlEngine> m_engine;
 
     QMap<QString, QVariantMap> m_currentState;
 

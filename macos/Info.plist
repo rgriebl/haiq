@@ -18,7 +18,7 @@
     <string>Bundle for HAiQ</string>
 
     <key>CFBundleIdentifier</key>
-    <string>org.griebl.@EXECUTABLE@</string>
+    <string>org.griebl.haiq</string>
 
     <key>CFBundleSignature</key>
     <string>ttxt</string>

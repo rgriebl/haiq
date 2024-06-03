@@ -1,16 +1,7 @@
-/* Copyright (C) 2017-2022 Robert Griebl. All rights reserved.
-**
-** This file is part of HAiQ.
-**
-** This file may be distributed and/or modified under the terms of the GNU
-** General Public License version 2 as published by the Free Software Foundation
-** and appearing in the file LICENSE.GPL included in the packaging of this file.
-**
-** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-**
-** See http://fsf.org/licensing/licenses/gpl.html for GPL licensing information.
-*/
+// Copyright (C) 2017-2024 Robert Griebl
+// SPDX-License-Identifier: GPL-3.0-only
+
+#include <chrono>
 
 #include <QCoreApplication>
 #include <QStringBuilder>
@@ -21,24 +12,16 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QTimer>
-#include <QQmlEngine>
 #include <QDebug>
 
 #include "xbrowsersync.h"
 #include "lzutf8.h"
 #include "gcm.h"
 
+using namespace std::chrono_literals;
+
 
 XBrowserSync *XBrowserSync::s_instance = nullptr;
-
-void XBrowserSync::registerQmlTypes()
-{
-    qmlRegisterSingletonType<XBrowserSync>("org.griebl.xbrowsersync", 1, 0, "XBrowserSync",
-                                           [](QQmlEngine *, QJSEngine *) -> QObject * {
-        QQmlEngine::setObjectOwnership(instance(), QQmlEngine::CppOwnership);
-        return instance();
-    });
-}
 
 XBrowserSync *XBrowserSync::instance()
 {
@@ -78,7 +61,7 @@ XBrowserSync::XBrowserSync(const QUrl &syncUrl, const QString &syncId,
                                                    password.toLatin1(), syncId.toLatin1(), 250000, 32);
 
     connect(m_refreshTimer, &QTimer::timeout, this, &XBrowserSync::sync);
-    m_refreshTimer->start(1 * 60 * 1000); // 30min
+    m_refreshTimer->start(30min);
 }
 
 void XBrowserSync::sync()
@@ -89,7 +72,7 @@ void XBrowserSync::sync()
 
     if (m_lastSync.isValid()) {
         QUrl url = m_syncUrl;
-        url.setPath(url.path() % u"/bookmarks/"_qs % m_syncId % u"/lastUpdated"_qs);
+        url.setPath(url.path() + u"/bookmarks/"_qs + m_syncId + u"/lastUpdated"_qs);
         auto reply = m_nam->get(QNetworkRequest(url));
 
         QObject::connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -125,7 +108,7 @@ void XBrowserSync::syncBookmarks()
         return;
 
     QUrl url = m_syncUrl;
-    url.setPath(url.path() % u"/bookmarks/"_qs % m_syncId);
+    url.setPath(url.path() + u"/bookmarks/"_qs + m_syncId);
 
     auto reply = m_nam->get(QNetworkRequest(url));
 

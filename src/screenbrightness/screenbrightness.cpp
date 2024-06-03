@@ -13,12 +13,8 @@
 #include <QDir>
 #include <QScreen>
 #include <qpa/qplatformscreen.h>
-#include <QQmlEngine>
 
 #include "screenbrightness.h"
-
-#define qSL(x) QStringLiteral(x)
-#define qL1S(x) QLatin1String(x)
 
 
 ScreenBrightness *ScreenBrightness::s_instance = nullptr;
@@ -38,15 +34,6 @@ ScreenBrightness *ScreenBrightness::createInstance(const QString &options, QObje
     return s_instance;
 }
 
-void ScreenBrightness::registerQmlTypes()
-{
-    qmlRegisterSingletonType<ScreenBrightness>("org.griebl.haiq", 1, 0, "ScreenBrightness",
-                                           [](QQmlEngine *, QJSEngine *) -> QObject * {
-        QQmlEngine::setObjectOwnership(instance(), QQmlEngine::CppOwnership);
-        return instance();
-    });
-}
-
 ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
     : QObject(parent)
 {
@@ -64,7 +51,7 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
     QStringList optionList = options.split(u':', Qt::SkipEmptyParts);
 
     if (optionList.isEmpty() || optionList.constFirst() == u"backlight") {
-        QString backlightPath(qSL("/sys/class/backlight/"));
+        QString backlightPath(u"/sys/class/backlight/"_qs);
 
         for (int i = 1; i < optionList.size(); ++i) {
             if (optionList.at(i).startsWith(backlightPath)) {
@@ -76,7 +63,7 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
         if (backlightDevice.isEmpty()) {
             auto backlights = QDir(backlightPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
             if (!backlights.isEmpty())
-                backlightDevice = backlightPath % backlights.at(0);
+                backlightDevice = backlightPath + backlights.at(0);
         }
         if (backlightDevice.isEmpty()) {
             qWarning() << "Brightness control via" << backlightPath << "was requested, but no suitable device is available";
@@ -172,7 +159,7 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
         int maxBrightness = -1;
 
         {
-            QFile maxBrightnessFile(backlightDevice % qSL("/max_brightness"));
+            QFile maxBrightnessFile(backlightDevice + u"/max_brightness"_qs);
             if (maxBrightnessFile.open(QIODevice::ReadOnly))
                 maxBrightness = maxBrightnessFile.readAll().toInt();
         }
@@ -187,14 +174,14 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
 //            qDebug() << "Setting effective brightness to" << brightness
 //                     << "(in hw units:" << qBound(0, int(maxBrightness * brightness), maxBrightness) << ")";
 
-            QFile brightnessFile(backlightDevice % qSL("/brightness"));
+            QFile brightnessFile(backlightDevice + u"/brightness"_qs);
             if (brightnessFile.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
                 QByteArray data = QByteArray::number(qBound(0, int(maxBrightness * brightness), maxBrightness)) + '\n';
                 brightnessFile.write(data);
                 brightnessFile.close();
 
                 if (forceBlank) {
-                    QFile blankFile(backlightDevice % qSL("/device/graphics/fb0/blank"));
+                    QFile blankFile(backlightDevice + u"/device/graphics/fb0/blank"_qs);
                     if (blankFile.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
                         QByteArray blankData = qFuzzyIsNull(brightness) ? "1\n" : "0\n";
                         blankFile.write(blankData);
