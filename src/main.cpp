@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
         clp.showHelp();
 
     // trigger existing instance and quit if there is one
-    if (clp.isSet(u"new-instance"_qs) && notifyOtherInstance()) {
+    if (!clp.isSet(u"new-instance"_qs) && notifyOtherInstance()) {
         qDebug() << "Activating other instance";
         return 0;
     }
