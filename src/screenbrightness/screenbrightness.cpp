@@ -119,17 +119,16 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
             qDebug() << "Setting effective brightness to" << brightness
                      << "(in hw units:" << qBound(0, int(maxBrightness * brightness), maxBrightness) << ")";
 
-            int b = qBound(0, int(maxBrightness * brightness), maxBrightness);
-            Q_UNUSED(ddcVcp)
-//            QFile ddc(ddcDevice);
-//            if (ddc.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
-//                QByteArray msg(4, 0);
-//                msg[0] = 0x03; // set vcp
-//                msg[1] = char(ddcVcp & 0xff);
-//                msg[2] = char((b >> 8) & 0xff);
-//                msg[3] = char(b & 0xff);
-//                ddc.write(msg);
-//                ddc.close();
+            QFile ddc(ddcDevice);
+            if (ddc.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) {
+                int b = qBound(0, int(maxBrightness * brightness), maxBrightness);
+                QByteArray msg(4, 0);
+                msg[0] = 0x03; // set vcp
+                msg[1] = char(ddcVcp & 0xff);
+                msg[2] = char((b >> 8) & 0xff);
+                msg[3] = char(b & 0xff);
+                ddc.write(msg);
+                ddc.close();
 
                 if (forceBlank) {
                     QScreen *s = qApp->primaryScreen();
@@ -152,7 +151,7 @@ ScreenBrightness::ScreenBrightness(const QString &options, QObject *parent)
 
                         s->handle()->setPowerState(newState);
                     }
-//                }
+                }
             }
         });
     } else if (!backlightDevice.isEmpty()) {
