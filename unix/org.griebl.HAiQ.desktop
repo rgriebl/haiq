@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=HAiQ
+TryExec=haiq
+Exec=haiq --variant office
+Icon=org.griebl.HAiQ
+Categories=Qt;Network;
+Type=Application
+Terminal=false

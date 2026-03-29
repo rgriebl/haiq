@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
     qputenv("QT_VIRTUALKEYBOARD_DESKTOP_DISABLE", "1");
 #endif
 
+
     QCoreApplication::setApplicationName(HAIQ_NAME u""_qs);
     QCoreApplication::setApplicationVersion(HAIQ_VERSION u""_qs);
     QCoreApplication::setOrganizationName(HAIQ_NAME u""_qs);
@@ -263,6 +264,17 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.setOutputWarningsToStandardError(true);
     engine.addImportPath(qmlPath);
+
+    // Qt 6.10+: the engine implicitly searches qrc:/qt-project.org/imports/ for QML modules.
+    // When a style plugin (e.g. Universal) is loaded, its transitive dependency on the Basic
+    // backing library registers the Basic qmldir as a resource. The engine then finds it via
+    // the resource import path and fails to load the plugin .so from there. Removing this
+    // implicit resource path forces the engine to resolve all Qt modules from the filesystem,
+    // where plugin loading works. The "prefer" directives in the filesystem qmldirs still
+    // redirect QML file loading to resources as intended.
+    QStringList importPaths = engine.importPathList();
+    importPaths.removeAll(u"qrc:/qt-project.org/imports"_qs);
+    engine.setImportPathList(importPaths);
 
     QQmlFileSelector *selector = new QQmlFileSelector(&engine);
     selector->setExtraSelectors({ variant });

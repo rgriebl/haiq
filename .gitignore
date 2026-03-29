@@ -71,5 +71,10 @@ CMakeLists.txt.user
 *.dll
 *.exe
 *.qmlc
+*.qmlls.ini
 
 build/
+builds/
+android/.gradle/
+.vscode/
+.claude/

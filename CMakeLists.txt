@@ -77,9 +77,9 @@ add_compile_definitions(
     QT_MESSAGELOGCONTEXT
     QT_USE_QSTRINGBUILDER
 )
-
+set(QT_NO_PRIVATE_MODULE_WARNING ON)
 find_package(Qt6 CONFIG QUIET
-    REQUIRED Core Gui Xml Network Qml Quick Svg QuickControls2 WebSockets
+    REQUIRED Core Gui GuiPrivate Xml Network Qml Quick Svg QuickControls2 WebSockets
 )
 
 if (${Qt6_VERSION} VERSION_GREATER_EQUAL "6.8.0")
@@ -88,7 +88,7 @@ if (${Qt6_VERSION} VERSION_GREATER_EQUAL "6.8.0")
     )
 endif()
 
-set(MIN_QT_VERSION 6.6.2)
+set(MIN_QT_VERSION 6.10.1)
 
 if (ANDROID OR IOS OR FORCE_MOBILE)
     set(HAIQ_MOBILE ON)
