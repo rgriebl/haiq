@@ -19,6 +19,7 @@ class ScreenBrightness : public QObject
     Q_PROPERTY(qreal dimBrightness READ dimBrightness WRITE setDimBrightness NOTIFY dimBrightnessChanged)
     Q_PROPERTY(qreal minimumBrightness READ minimumBrightness WRITE setMinimumBrightness NOTIFY minimumBrightnessChanged)
     Q_PROPERTY(qreal maximumBrightness READ maximumBrightness WRITE setMaximumBrightness NOTIFY maximumBrightnessChanged)
+    Q_PROPERTY(bool animateBrightness READ animateBrightness WRITE setAnimateBrightness NOTIFY animateBrightnessChanged FINAL)
 
 public:
     ~ScreenBrightness();
@@ -39,6 +40,7 @@ public:
     qreal maximumBrightness() const;
     bool isBlanked() const;
     void blank(bool on = true);
+    bool animateBrightness() const;
 
 public slots:
     void setSetScreenSaverActive(bool screenSaverActive);
@@ -49,6 +51,7 @@ public slots:
     void setDimBrightness(qreal dimBrightness);
     void setMinimumBrightness(qreal minimumBrightness);
     void setMaximumBrightness(qreal maximumBrightness);
+    void setAnimateBrightness(bool animateBrightness);
 
 signals:
     void screenSaverActiveChanged(bool screenSaverActive);
@@ -61,6 +64,7 @@ signals:
     void maximumBrightnessChanged(qreal maximumBrightness);
     void effectiveBrightnessChanged(qreal effectiveBrightness);
     bool blankChanged();
+    bool animateBrightnessChanged();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -91,6 +95,8 @@ private:
 
     int m_blankTimeout = 0;
     int m_blankTimer = 0;
+
+    bool m_animateBrightness = false;
 
     ScreenSaverState m_screenSaverState = IsActive;
 

@@ -293,7 +293,7 @@ void ScreenBrightness::setBrightness(qreal brightness)
         brightness = qBound(minimumBrightness(), brightness, maximumBrightness());
 
     if (!qFuzzyCompare(brightness, m_brightness)) {
-        if (!m_brightnessAnimation) { // lazy allocation
+        if (m_animateBrightness && !m_brightnessAnimation) { // lazy allocation
             m_brightnessAnimation = new QVariantAnimation(this);
             m_brightnessAnimation->setEasingCurve(QEasingCurve(QEasingCurve::OutCubic));
             connect(m_brightnessAnimation, &QVariantAnimation::valueChanged,
@@ -302,17 +302,22 @@ void ScreenBrightness::setBrightness(qreal brightness)
             });
         }
 
-        if (m_brightnessAnimation->state() == QAbstractAnimation::Running)
-            m_brightnessAnimation->stop();
+        if (m_animateBrightness) {
+            if (m_brightnessAnimation->state() == QAbstractAnimation::Running)
+                m_brightnessAnimation->stop();
 
-        // dim up in 500 msec / dim down in 2000 msec
-        m_brightnessAnimation->setDuration(m_brightness < brightness ? 500 : 2000);
-        m_brightnessAnimation->setStartValue(m_brightness);
-        m_brightnessAnimation->setEndValue(brightness);
+            // dim up in 500 msec / dim down in 2000 msec
+            m_brightnessAnimation->setDuration(m_brightness < brightness ? 500 : 2000);
+            m_brightnessAnimation->setStartValue(m_brightness);
+            m_brightnessAnimation->setEndValue(brightness);
 
-        m_brightnessAnimation->start();
+            m_brightnessAnimation->start();
+        }
         m_brightness = brightness;
         emit brightnessChanged(m_brightness);
+
+        if (!m_animateBrightness)
+            emit effectiveBrightnessChanged(m_brightness);
     }
 }
 
@@ -348,6 +353,11 @@ void ScreenBrightness::setMaximumBrightness(qreal maximumBrightness)
     }
 }
 
+void ScreenBrightness::setAnimateBrightness(bool animateBrightness)
+{
+    m_animateBrightness = animateBrightness;
+}
+
 void ScreenBrightness::blank(bool on)
 {
     if (m_screenSaverActive) {
@@ -356,6 +366,11 @@ void ScreenBrightness::blank(bool on)
         else if (!on && (m_screenSaverState == IsBlanked))
             setScreenSaverState(IsActive);
     }
+}
+
+bool ScreenBrightness::animateBrightness() const
+{
+    return m_animateBrightness;
 }
 
 bool ScreenBrightness::eventFilter(QObject *watched, QEvent *event)
@@ -435,7 +450,7 @@ void ScreenBrightness::setScreenSaverState(ScreenBrightness::ScreenSaverState ne
         //           << "(brightness:" << newBrightness << ")";
 
         if (m_screenSaverState == IsBlanked || newState == IsBlanked)
-            QMetaObject::invokeMethod(this, &ScreenBrightness::blankChanged);
+            emit blankChanged();
 
         m_screenSaverState = newState;
     }

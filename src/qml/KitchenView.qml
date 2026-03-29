@@ -49,10 +49,7 @@ TabletView {
         //     action: function() { }
         // })
 
-        ScreenBrightness.brightness = 1
-        ScreenBrightness.normalBrightness = 1
-        ScreenBrightness.dimBrightness = 1
-
+        ScreenBrightness.minimumBrightness = 0.2
         ScreenBrightness.screenSaverActive = true
 
         HomeAssistant.subscribe("sun.sun", function(state, attributes) {
@@ -62,7 +59,7 @@ TabletView {
             console.warn("Light: " + light + " -- setting new factor: " + factor)
 
             if (!nightTime)
-                ScreenBrightness.normalBrightness = factor
+                ScreenBrightness.brightness = factor
         })
         HomeAssistant.subscribe("group.irgendwer", function(state, attributes) {
             if (!nightTime)
