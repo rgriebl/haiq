@@ -68,8 +68,8 @@ TabButton {
 
     contentItem: RowLayout {
         Item {
-            implicitWidth: 16
-            implicitHeight: 16
+            implicitWidth: 32
+            implicitHeight: 32
             BusyIndicator {
                 visible: root.tab.loading
                 anchors.fill: parent
@@ -81,7 +81,10 @@ TabButton {
             }
             Image {
                 visible: !root.tab.loading
-                source: root.tab.icon
+                source: root.tab?.icon ? root.tab.icon : ""
+                sourceSize: Qt.size(width, height)
+                width: 32
+                height: 32
                 anchors.fill: parent
             }
         }

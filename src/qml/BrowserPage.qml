@@ -32,16 +32,10 @@ Page {
         z: 0
         anchors.fill: parent
 
-        profile: WebEngineProfile {
-            storageName: "profile"
-            offTheRecord: false
+        WebEngineProfilePrototype {
+            id: nonOtrProfile
+            storageName: 'haiq'
             persistentCookiesPolicy: WebEngineProfile.ForcePersistentCookies
-
-
-        }
-        Component.onCompleted: {
-            console.log("cache", profile.cachePath, profile.persistentStoragePath)
-            console.log("cookies", profile.persistentCookiesPolicy)
         }
 
         currentIndex: tabBar.currentIndex
@@ -153,6 +147,7 @@ Page {
     }
 
     function createNewTab(properties) {
+        properties = Object.assign({}, properties, { profile: nonOtrProfile.instance() })
         const tab = tabStack.createNewTab(properties)
         tabBar.createNewTab({tab: tab})
         tabBar.currentIndex = tab.index
