@@ -84,7 +84,7 @@ TabletView {
 
         states: State {
             name: "active"
-            when: InputMethod.visible
+            when: inputPanel.active
             PropertyChanges { inputPanel.y: root.height - inputPanel.height }
         }
         transitions: Transition {
