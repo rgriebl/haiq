@@ -194,10 +194,11 @@ void ICalendarParser::parse()
             throw createException("cannot read line");
         else if (lineLength == 0)
             continue;
-        else if (lineBuffer[lineLength - 1] != '\n') // too long, give up
+        else if ((lineBuffer[lineLength - 1] != '\n') && !m_device->atEnd()) // too long, give up
             throw createException("line too long");
 
-        --lineLength; // remove '\n'
+        if (lineLength > 0 && lineBuffer[lineLength - 1] == '\n')
+            --lineLength; // remove '\n'
         if (lineLength > 0 && lineBuffer[lineLength - 1] == '\r')
             --lineLength; // remove '\r'
 
